@@ -1,0 +1,12 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFramework>netstandard2.0</TargetFramework>
+        <DisableDefaultDocumentation>true</DisableDefaultDocumentation>
+        <RepositoryUrl>https://github.com/Emik03/Emik.Analyzers.Matches</RepositoryUrl>
+        <Description>Analyzer for compile-time parameter validation with the power of regex.</Description>
+        <PackageTags>Regex String Match Parameter Validation Attribute Source Generator Analyzer Roslyn</PackageTags>
+    </PropertyGroup>
+    <ItemGroup>
+        <PackageReference Include="Gu.Roslyn.Extensions.Source" Version="0.17.0" PrivateAssets="all"/>
+    </ItemGroup>
+</Project>
