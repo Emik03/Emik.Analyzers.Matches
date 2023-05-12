@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
         <FileVersion>1.1</FileVersion>
-        <NoWarn>$(NoWarn);CS3016</NoWarn>
+        <NoWarn>$(NoWarn);3001;3002;3003;3009;3016;3024</NoWarn>
         <TargetFramework>netstandard2.0</TargetFramework>
         <DisableDefaultDocumentation>true</DisableDefaultDocumentation>
         <RepositoryUrl>https://github.com/Emik03/Emik.Analyzers.Matches</RepositoryUrl>
