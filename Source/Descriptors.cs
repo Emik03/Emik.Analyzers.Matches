@@ -57,15 +57,19 @@ public static class Descriptors
         string title,
         string description,
         string messageFormat
-    ) =>
-        new(
-            $"EAM{id.ToString().PadLeft(3, '0')}",
+    )
+    {
+        var index = id.ToString().PadLeft(3, '0');
+
+        return new(
+            $"EAM{index}",
             title,
             messageFormat,
             typeof(MatchAnalyzer).Namespace,
             severity,
             true,
             description,
-            "https://github.com/Emik03/Emik.Analyzers.Matches"
+            $"https://github.com/Emik03/Emik.Analyzers.Matches/tree/master/Documentation/EAM00{index}.md"
         );
+    }
 }
