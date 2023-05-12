@@ -18,7 +18,7 @@ public sealed class MatchGenerator : ISourceGenerator
                 [global::System.AttributeUsage(global::System.AttributeTargets.Parameter)]
                 internal sealed class MatchAttribute : global::System.Attribute
                 {
-                    /// <summary>Initializes a new instance of the <see cref="MatchAttribute"/> class.</summary>
+                    /// <summary>Initializes a new instance of the <see cref="Emik.MatchAttribute"/> class.</summary>
                     /// <param name="pattern">The regular expression pattern to match.</param>
                     /// <param name="options">The bitwise combination of the enumeration values that modify the regular expression.</param>
                     public MatchAttribute([global::System.Diagnostics.CodeAnalysis.StringSyntax(global::System.Diagnostics.CodeAnalysis.StringSyntaxAttribute.Regex)] string pattern, global::System.Text.RegularExpressions.RegexOptions options = global::System.Text.RegularExpressions.RegexOptions.None)

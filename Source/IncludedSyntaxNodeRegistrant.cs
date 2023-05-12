@@ -48,6 +48,29 @@ static class IncludedSyntaxNodeRegistrant
         where TSyntaxNode : SyntaxNode =>
         context.RegisterSyntaxNodeAction(Filter(action), syntaxKinds);
 
+    /// <summary>Adds information to a diagnostic.</summary>
+    /// <param name="diagnostic">The diagnostic to append.</param>
+    /// <param name="message">The string to append.</param>
+    /// <returns>The diagnostic with added information.</returns>
+    internal static Diagnostic And(this Diagnostic diagnostic, string message) =>
+        Diagnostic.Create(
+            new(
+                diagnostic.Descriptor.Id,
+                diagnostic.Descriptor.Title,
+                $"{diagnostic.Descriptor.MessageFormat} {message}",
+                diagnostic.Descriptor.Category,
+                diagnostic.Descriptor.DefaultSeverity,
+                diagnostic.Descriptor.IsEnabledByDefault,
+                $"{diagnostic.Descriptor.Description} {message}",
+                diagnostic.Descriptor.HelpLinkUri,
+                diagnostic.Descriptor.CustomTags.ToArray()
+            ),
+            diagnostic.Location,
+            diagnostic.Severity,
+            diagnostic.AdditionalLocations,
+            diagnostic.Properties
+        );
+
     static Action<SyntaxNodeAnalysisContext> Filter<TSyntaxNode>(Action<SyntaxNodeAnalysisContext, TSyntaxNode> action)
         where TSyntaxNode : SyntaxNode =>
         context =>
