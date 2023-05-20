@@ -6,7 +6,8 @@ namespace Emik.Analyzers.Matches;
 public sealed class MatchAnalyzer : DiagnosticAnalyzer
 {
     /// <inheritdoc />
-    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => Descriptors.Diagnostics;
+    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
+        ImmutableArray.Create(Descriptors.Eam001, Descriptors.Eam002, Descriptors.Eam003);
 
     /// <inheritdoc />
     public override void Initialize(AnalysisContext context)

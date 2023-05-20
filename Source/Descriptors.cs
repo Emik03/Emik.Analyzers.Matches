@@ -43,10 +43,6 @@ public static class Descriptors
             $"This will cause an {nameof(ArgumentOutOfRangeException)} at runtime."
         );
 
-    /// <summary>Gets all of the library's diagnostics.</summary>
-    public static ImmutableArray<DiagnosticDescriptor> Diagnostics { get; } =
-        ImmutableArray.Create(Eam001, Eam002, Eam003, Eam004);
-
     /// <summary>Creates a diagnostic from a <see cref="RegexStatus"/>.</summary>
     /// <param name="status">The status to convert.</param>
     /// <exception cref="ArgumentOutOfRangeException">A non-valid member is passed in.</exception>
@@ -79,7 +75,7 @@ public static class Descriptors
             severity,
             true,
             description,
-            $"https://github.com/Emik03/Emik.Analyzers.Matches/tree/master/Documentation/EAM00{index}.md"
+            $"https://github.com/Emik03/Emik.Analyzers.Matches/tree/master/Documentation/EAM{index}.md"
         );
     }
 }
