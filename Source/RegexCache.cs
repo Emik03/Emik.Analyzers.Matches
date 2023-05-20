@@ -36,16 +36,14 @@ public static class RegexCache
         return regex;
     }
 
-    static void ClearOldRegexes()
-    {
-        var (oldest, _) = s_cache.Aggregate(Older);
-        s_cache.TryRemove(oldest, out _);
-
+    static void ClearOldRegexes() =>
         s_cache
-           .Where(x => x.Value.LastUsed - DateTime.Now > s_maxCacheTime)
+           .Where(IsOld)
+           .Append(s_cache.Aggregate(Older))
            .ToList()
-           .ForEach(x => s_cache.TryRemove(x.Key, out _));
-    }
+           .ForEach(TryRemove);
+
+    static void TryRemove(CachePair x) => s_cache.TryRemove(x.Key, out _);
 
     static Regex? TryCreate(string pattern, RegexOptions options)
     {
@@ -58,6 +56,8 @@ public static class RegexCache
             return null;
         }
     }
+
+    static bool IsOld(CachePair x) => x.Value.LastUsed - DateTime.Now > s_maxCacheTime;
 
     static CachePair Older(CachePair prev, CachePair next) => prev.Value.LastUsed < next.Value.LastUsed ? prev : next;
 }
