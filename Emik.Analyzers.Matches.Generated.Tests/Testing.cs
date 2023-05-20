@@ -6,13 +6,19 @@ static class Extensions
     public static bool Test(Type t, bool b, [Match("^$")] string a) => b;
 }
 
-record B([Match(@"^\d*$")] string? Unused = default)
+partial record B([Match(@"^\d*$")] string? Unused = default)
 {
     public string this[[Match(@"^\d*$")] string a] => a;
+
+    [GeneratedRegex("foobar(a)(b)")]
+    private static partial Regex EvenBetter();
 
     public static void DoesItWork()
     {
         const string Yes = "017893567891";
+
+        EvenBetter().Match("", out var a, out var b, out var c);
+        new Regex("").Match("");
 
         // This should pass.
         _ = Static(Yes);
