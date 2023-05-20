@@ -33,9 +33,19 @@ public static class Descriptors
             "The argument took too long to validate on whether it matches the regex specified by the parameter: <code>{0}</code>"
         );
 
+    /// <summary>Gets the descriptor describing that this capture group cannot exist.</summary>
+    public static DiagnosticDescriptor Eam004 { get; } =
+        Make(
+            4,
+            DiagnosticSeverity.Error,
+            "Capture group doesn't exist",
+            $"This will cause an {nameof(ArgumentOutOfRangeException)} at runtime.",
+            $"This will cause an {nameof(ArgumentOutOfRangeException)} at runtime."
+        );
+
     /// <summary>Gets all of the library's diagnostics.</summary>
     public static ImmutableArray<DiagnosticDescriptor> Diagnostics { get; } =
-        ImmutableArray.Create(Eam001, Eam002, Eam003);
+        ImmutableArray.Create(Eam001, Eam002, Eam003, Eam004);
 
     /// <summary>Creates a diagnostic from a <see cref="RegexStatus"/>.</summary>
     /// <param name="status">The status to convert.</param>
