@@ -30,18 +30,21 @@ public static class RegexCache
             return null;
 
         if (s_cache.Count >= MaxCacheSize)
-        {
-            var (oldest, _) = s_cache.Aggregate(Older);
-            s_cache.TryRemove(oldest, out _);
-
-            s_cache
-               .Where(x => x.Value.LastUsed - DateTime.Now > s_maxCacheTime)
-               .ToList()
-               .ForEach(x => s_cache.TryRemove(x.Key, out _));
-        }
+            ClearOldRegexes();
 
         s_cache[key] = regex;
         return regex;
+    }
+
+    static void ClearOldRegexes()
+    {
+        var (oldest, _) = s_cache.Aggregate(Older);
+        s_cache.TryRemove(oldest, out _);
+
+        s_cache
+           .Where(x => x.Value.LastUsed - DateTime.Now > s_maxCacheTime)
+           .ToList()
+           .ForEach(x => s_cache.TryRemove(x.Key, out _));
     }
 
     static Regex? TryCreate(string pattern, RegexOptions options)
