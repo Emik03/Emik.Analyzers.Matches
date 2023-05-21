@@ -52,16 +52,16 @@ static class IncludedSyntaxNodeRegistrant
     /// <param name="diagnostic">The diagnostic to append.</param>
     /// <param name="message">The string to append.</param>
     /// <returns>The diagnostic with added information.</returns>
-    internal static Diagnostic And(this Diagnostic diagnostic, string message) =>
+    internal static Diagnostic And<T>(this Diagnostic diagnostic, T message) =>
         Diagnostic.Create(
             new(
                 diagnostic.Descriptor.Id,
                 diagnostic.Descriptor.Title,
-                $"{diagnostic.Descriptor.MessageFormat} {message}",
+                $"{diagnostic.Descriptor.MessageFormat} {message.Stringify()}",
                 diagnostic.Descriptor.Category,
                 diagnostic.Descriptor.DefaultSeverity,
                 diagnostic.Descriptor.IsEnabledByDefault,
-                $"{diagnostic.Descriptor.Description} {message}",
+                $"{diagnostic.Descriptor.Description} {message.Stringify()}",
                 diagnostic.Descriptor.HelpLinkUri,
                 diagnostic.Descriptor.CustomTags.ToArray()
             ),
