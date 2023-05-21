@@ -6,7 +6,7 @@
         <DisableDefaultDocumentation>true</DisableDefaultDocumentation>
         <RepositoryUrl>https://github.com/Emik03/Emik.Analyzers.Matches</RepositoryUrl>
         <Description>Analyzer for compile-time parameter validation with the power of regex.</Description>
-        <PackageTags>Regex String Match Parameter Validation Attribute Source Generator Analyzer Roslyn</PackageTags>
+        <PackageTags>Regex Match Group Capture String Parameter Argument Validation Validator Attribute Extensions Source Generator Analyzer Roslyn</PackageTags>
     </PropertyGroup>
     <ItemGroup>
         <PackageReference Remove="UnitGenerator"/>
