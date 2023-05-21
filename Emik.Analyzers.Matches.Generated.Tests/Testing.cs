@@ -58,6 +58,8 @@ partial record B([Match(@"^\d*$")] string? Unused = default)
 
     public void Error()
     {
+        Regex regex = new("foobar(a)");
+
         _ = Static(No);
         _ = new B().Instance(No);
         _ = new B()[No];
@@ -76,7 +78,7 @@ partial record B([Match(@"^\d*$")] string? Unused = default)
 
     public void Warning()
     {
-        Regex runtimeRegex = s_runtimeFieldRegex;
+        var runtimeRegex = s_runtimeFieldRegex;
 
         _ = Static(Yes[..]);
         _ = new B().Instance(Yes[..]);
