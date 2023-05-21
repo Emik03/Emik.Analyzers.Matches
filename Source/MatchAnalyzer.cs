@@ -79,7 +79,7 @@ public sealed class MatchAnalyzer : DiagnosticAnalyzer
         parameter
            .GetAttributes()
            .AddRange(GetAttributes(parameter.Type))
-           .FirstOrDefault(x => x.AttributeClass?.Name is "MatchAttribute");
+           .FirstOrDefault(x => x.AttributeClass?.Name is MatchGenerator.TypeName);
 
     static IEnumerable<AttributeData> GetAttributes(ITypeSymbol type) =>
         type.TryFindSingleMethod(IsConversion, out var conversion)
