@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MPL-2.0
 namespace Emik.Analyzers.Matches.Generated.Tests;
-#pragma warning disable 0219, CA1819, IDE0059, MA0110
+#pragma warning disable 0219, CA1819, IDE0059, MA0110, RCS1085
 
 // ReSharper disable NotAccessedPositionalProperty.Global
 partial record B([Match(@"^\d*$")] string? Unused = default)
@@ -106,7 +106,7 @@ partial record B([Match(@"^\d*$")] string? Unused = default)
     public string Instance([Match(@"^\d*$")] string a) => a;
 
     // ReSharper disable once MemberCanBeMadeStatic.Global
-    public static string EvilRegex([Match(@"^([^t]+)+t$")] string a) => a;
+    public static string EvilRegex([Match("^([^t]+)+t$")] string a) => a;
 
     public static implicit operator B([Match(@"^\d*$")] string _) => new();
 }
