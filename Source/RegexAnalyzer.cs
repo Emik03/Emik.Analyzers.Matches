@@ -69,7 +69,7 @@ public sealed class RegexAnalyzer : DiagnosticAnalyzer
     ) =>
         Identifier(syntax.Expression as MemberAccessExpressionSyntax) is { } identifier &&
         model.GetSymbolInfo(identifier, token).Symbol is { } symbol &&
-        TypeSymbol(symbol)?.Name is nameof(Regex)
+        symbol.ToUnderlying()?.Name is nameof(Regex)
             ? symbol
                .DeclaringSyntaxReferences
                .Select(x => x.GetSyntax(token))
@@ -133,20 +133,6 @@ public sealed class RegexAnalyzer : DiagnosticAnalyzer
         {
             IdentifierNameSyntax x => x,
             InvocationExpressionSyntax x => x.Expression as IdentifierNameSyntax,
-            _ => null,
-        };
-
-    static ITypeSymbol? TypeSymbol(ISymbol? symbol) =>
-        symbol switch
-        {
-            IEventSymbol x => x.Type,
-            IFieldSymbol x => x.Type,
-            ILocalSymbol x => x.Type,
-            IDiscardSymbol x => x.Type,
-            IPropertySymbol x => x.Type,
-            IParameterSymbol x => x.Type,
-            IMethodSymbol x => x.ReturnType,
-            IArrayTypeSymbol x => x.ElementType,
             _ => null,
         };
 
