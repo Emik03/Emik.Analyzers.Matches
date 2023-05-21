@@ -1,16 +1,22 @@
 // SPDX-License-Identifier: MPL-2.0
 namespace Emik.Analyzers.Matches;
 
-/// <summary>Generates the attribute needed to use this analyzer.</summary>
+/// <summary>Generates the extension methods that are later analyzed when used.</summary>
 [Generator]
 public sealed class RegexGenerator : ISourceGenerator
 {
+    /// <summary>The name of the extension method added by this generator.</summary>
+    public const string TypeName = "RegexDeconstructors";
+
+    /// <summary>The name of the extension method added by this generator.</summary>
+    public const string MethodName = nameof(Match);
+
     /// <summary>Gets the contents to generate a source of.</summary>
     public static string Contents { get; } = Methods();
 
     /// <inheritdoc />
     public void Execute(GeneratorExecutionContext context) =>
-        context.AddSource("Emik.RegexDeconstructors.g.cs", Contents);
+        context.AddSource($"Emik.{TypeName}.g.cs", Contents);
 
     /// <inheritdoc />
     public void Initialize(GeneratorInitializationContext context) { }
@@ -26,7 +32,7 @@ public sealed class RegexGenerator : ISourceGenerator
             namespace Emik
             {
                 /// <summary>Declares a contract that the generic parameter must include the qualified member.</summary>
-                internal static class RegexDeconstructors
+                internal static class {{TypeName}}
                 {
             {{(1..15).For().Select(Method).Conjoin("\n\n")}}
                 }
@@ -38,7 +44,7 @@ public sealed class RegexGenerator : ISourceGenerator
         CSharp(
             2,
             $$"""
-            public static bool Match(
+            public static bool {{MethodName}}(
                 this global::System.Text.RegularExpressions.Regex regex,
                 [global::System.Diagnostics.CodeAnalysis.NotNullWhen(true)] string? input,
             {{Parameter(arg)}}
