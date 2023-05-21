@@ -52,10 +52,11 @@ public sealed class MatchAnalyzer : DiagnosticAnalyzer
                    .TakeWhile(x => x.Syntax is not null)
                    .Select(x => LocateMismatches(x.Data, x.Syntax)),
                 VariableDeclaratorSyntax
-                {
-                    Initializer.Value: var value, Parent: VariableDeclarationSyntax { Type: var type },
-                } when model.GetTypeInfo(type, token).Type is { } symbol => GetAttributes(symbol)
-                   .Select(x => LocateMismatches(x, value)),
+                    {
+                        Initializer.Value: var value, Parent: VariableDeclarationSyntax { Type: var type },
+                    } when model.GetTypeInfo(value, token).Type?.Name is nameof(String) &&
+                    model.GetTypeInfo(type, token).Type is { } symbol => GetAttributes(symbol)
+                       .Select(x => LocateMismatches(x, value)),
                 _ => Enumerable.Empty<Diagnostic>(),
             })
            .Filter()
