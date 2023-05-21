@@ -9,7 +9,7 @@ public sealed class RegexGenerator : ISourceGenerator
     public const string TypeName = "RegexDeconstructors";
 
     /// <summary>The name of the extension method added by this generator.</summary>
-    public const string MethodName = nameof(Match);
+    public const string MethodName = nameof(Regex.IsMatch);
 
     /// <summary>Gets the contents to generate a source of.</summary>
     public static string Contents { get; } = Methods();
