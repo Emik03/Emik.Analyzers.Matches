@@ -44,7 +44,7 @@ public sealed class RegexGenerator : ISourceGenerator
             2,
             $$"""
             public static bool {{MethodName}}(
-                this global::System.Text.RegularExpressions.Regex? regex,
+                [global::System.Diagnostics.CodeAnalysis.NotNullWhen(true)] this global::System.Text.RegularExpressions.Regex? regex,
                 [global::System.Diagnostics.CodeAnalysis.NotNullWhen(true)] string? input,
             {{Parameter(arg)}}
             )
