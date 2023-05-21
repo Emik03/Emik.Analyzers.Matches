@@ -96,7 +96,7 @@ public sealed class RegexAnalyzer : DiagnosticAnalyzer
 
     static ObjectCreationExpressionSyntax? Constructor(InvocationExpressionSyntax syntax) =>
         ((syntax.Expression as MemberAccessExpressionSyntax)?.Expression ??
-        syntax.ArgumentList.Arguments.FirstOrDefault()?.Expression) as ObjectCreationExpressionSyntax;
+            syntax.ArgumentList.Arguments.FirstOrDefault()?.Expression) as ObjectCreationExpressionSyntax;
 
     static RegexOptions GetConstantValue(SemanticModel model, IEnumerable<ArgumentSyntax>? rest) =>
         rest?.FirstOrDefault() is { } options &&
