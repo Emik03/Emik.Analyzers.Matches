@@ -8,16 +8,28 @@ static class Extensions
 
 partial record B([Match(@"^\d*$")] string? Unused = default)
 {
+    static readonly Regex s_regex = new("a(b)");
+
     public string this[[Match(@"^\d*$")] string a] => a;
 
     [GeneratedRegex("foobar(a)(b)")]
     private static partial Regex EvenBetter();
 
+    // Assembly 1
+    public static Regex Rgx() => new Regex("foobar(a)(b)");
+
+    // Assembly 2
     public static void DoesItWork()
     {
         const string Yes = "017893567891";
 
         EvenBetter().Match("", out var a, out var b, out var c);
+        new Regex("foobar(a)(b)").Match("", out var d, out var e, out var f);
+
+        Regex regex = new Regex("foobar(a)(b)");
+
+        Rgx().Match("", out var x, out var y, out var z);
+
         new Regex("").Match("");
 
         // This should pass.
