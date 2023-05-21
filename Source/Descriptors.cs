@@ -43,14 +43,24 @@ public static class Descriptors
             $"This will cause an {nameof(ArgumentOutOfRangeException)} at runtime. Use the overload with {{0}} out parameters."
         );
 
-    /// <summary>Gets the descriptor describing that this capture group cannot exist.</summary>
+    /// <summary>Gets the descriptor describing that there aren't enough capture groups.</summary>
     public static DiagnosticDescriptor Eam005 { get; } =
         Make(
             5,
+            DiagnosticSeverity.Error,
+            "Missing out declaration for capture group",
+            "This will cause an assertion failure at runtime.",
+            "This will cause an assertion failure at runtime. Use the overload with {0} out parameters."
+        );
+
+    /// <summary>Gets the descriptor describing that this capture group may not exist.</summary>
+    public static DiagnosticDescriptor Eam006 { get; } =
+        Make(
+            6,
             DiagnosticSeverity.Warning,
-            "Non-constant argument may have wrong number of capture groups",
-            $"This may cause an {nameof(ArgumentOutOfRangeException)} at runtime.",
-            $"This may cause an {nameof(ArgumentOutOfRangeException)} at runtime. Consider referencing a pre-determinable {nameof(Regex)} object."
+            $"Non-constant {nameof(Regex)} may have wrong number of capture groups",
+            $"This may cause an {nameof(ArgumentOutOfRangeException)} or an assertion failure at runtime.",
+            $"This may cause an {nameof(ArgumentOutOfRangeException)} or an assertion failure at runtime. Consider referencing a pre-determinable {nameof(Regex)} object."
         );
 
     /// <summary>Creates a diagnostic from a <see cref="RegexStatus"/>.</summary>
@@ -74,8 +84,9 @@ public static class Descriptors
     public static DiagnosticDescriptor? From(int? expectedNumberOfGroups, int actualNumberOfGroups) =>
         expectedNumberOfGroups switch
         {
-            { } x when x != actualNumberOfGroups => Eam004,
-            null => Eam005,
+            { } x when x < actualNumberOfGroups => Eam004,
+            { } x when x > actualNumberOfGroups => Eam005,
+            null => Eam006,
             _ => null,
         };
 
