@@ -25,6 +25,7 @@ partial record B([Match(@"^\d*$")] string? Unused = default)
 
         EvenBetter().Match("", out var a, out var b, out var c);
         new Regex("foobar(a)(b)").Match("", out var d, out var e, out var f);
+        s_regex.Match("", out var d, out var e, out var f);
 
         Regex regex = new Regex("foobar(a)(b)");
 
