@@ -74,7 +74,7 @@ public sealed class RegexGenerator : ISourceGenerator
            .For(
                 x => CSharp(
                     1,
-                    $"[global::System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out global::System.Text.RegularExpressions.Group n{x}"
+                    $"[global::System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out global::System.Text.RegularExpressions.Group? n{x}"
                 )
             )
            .Conjoin(",\n");
