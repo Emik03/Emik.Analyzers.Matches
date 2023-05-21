@@ -5,7 +5,8 @@
 
 Analyzer for compile-time parameter validation with the power of regex.
 
-This project has a dependency to [Emik.Morsels](https://github.com/Emik03/Emik.Morsels), if you are building this project, refer to its [README](https://github.com/Emik03/Emik.Morsels/blob/main/README.md) first.
+This project has a dependency to [Emik.Morsels](https://github.com/Emik03/Emik.Morsels), if you are building this
+project, refer to its [README](https://github.com/Emik03/Emik.Morsels/blob/main/README.md) first.
 
 ---
 
@@ -44,11 +45,14 @@ TestTyped(System.Environment.NewLine); // Warning: Not a constant
 
 ## Lints
 
-| Id                                                                                             | Title                                     |
-|------------------------------------------------------------------------------------------------|-------------------------------------------|
-| [EAM001](https://github.com/Emik03/Emik.Analyzers.Matches/tree/master/Documentation/EAM001.md) | Argument fails regex test                 |
-| [EAM002](https://github.com/Emik03/Emik.Analyzers.Matches/tree/master/Documentation/EAM002.md) | Non-constant argument may fail regex test |
-| [EAM003](https://github.com/Emik03/Emik.Analyzers.Matches/tree/master/Documentation/EAM003.md) | Argument regex test took too long         |
+| Id                                                                                             | Title                                                      |
+|------------------------------------------------------------------------------------------------|------------------------------------------------------------|
+| [EAM001](https://github.com/Emik03/Emik.Analyzers.Matches/tree/master/Documentation/EAM001.md) | Argument fails regex test                                  |
+| [EAM002](https://github.com/Emik03/Emik.Analyzers.Matches/tree/master/Documentation/EAM002.md) | Non-constant argument may fail regex test                  |
+| [EAM003](https://github.com/Emik03/Emik.Analyzers.Matches/tree/master/Documentation/EAM003.md) | Argument regex test took too long                          |
+| [EAM004](https://github.com/Emik03/Emik.Analyzers.Matches/tree/master/Documentation/EAM004.md) | Capture group doesn't exist                                |
+| [EAM005](https://github.com/Emik03/Emik.Analyzers.Matches/tree/master/Documentation/EAM005.md) | Missing out declaration for capture group                  |
+| [EAM006](https://github.com/Emik03/Emik.Analyzers.Matches/tree/master/Documentation/EAM006.md) | Non-constant Regex may have wrong number of capture groups |
 
 ## Contribute
 
