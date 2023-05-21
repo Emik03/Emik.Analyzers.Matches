@@ -27,8 +27,8 @@ partial record B([Match(@"^\d*$")] string? Unused = default)
 
     public string this[[Match(@"^\d*$")] string a] => a;
 
-    // [GeneratedRegex("foobar(a)")]
-    // private static partial Regex PartialMethodRegex();
+    [GeneratedRegex("foobar(a)")]
+    private static partial Regex PartialMethodRegex();
 
     static Regex MethodBodyRegex() => new("a(b)");
 
@@ -46,7 +46,7 @@ partial record B([Match(@"^\d*$")] string? Unused = default)
         Discard(Yes);
         Static(Yes, Yes, Yes, Yes);
 
-        // PartialMethodRegex().IsMatch("", out _, out _);
+        PartialMethodRegex().IsMatch("", out _, out _);
         _ = new Regex("(a)(b)").IsMatch("");
         new Regex("foobar(a)").IsMatch("", out _, out _);
         s_fieldRegex.IsMatch("", out _, out _);
