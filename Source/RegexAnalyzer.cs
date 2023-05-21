@@ -8,7 +8,7 @@ public sealed class RegexAnalyzer : DiagnosticAnalyzer
 {
     /// <inheritdoc />
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
-        ImmutableArray.Create(Descriptors.Eam004, Descriptors.Eam005);
+        ImmutableArray.Create(Descriptors.Eam004, Descriptors.Eam005, Descriptors.Eam006);
 
     /// <inheritdoc />
     public override void Initialize(AnalysisContext context)
