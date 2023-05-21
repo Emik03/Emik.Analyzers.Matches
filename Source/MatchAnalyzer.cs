@@ -14,12 +14,14 @@ public sealed class MatchAnalyzer : DiagnosticAnalyzer
     {
         context.EnableConcurrentExecution();
         context.ConfigureGeneratedCodeAnalysis(Analyze | ReportDiagnostics);
-        context.RegisterSyntaxNodeAction<VariableDeclaratorSyntax>(Go, VariableDeclarator);
-        context.RegisterSyntaxNodeAction<ElementAccessExpressionSyntax>(Go, ElementAccessExpression);
-        context.RegisterSyntaxNodeAction<ObjectCreationExpressionSyntax>(Go, ObjectCreationExpression);
-        context.RegisterSyntaxNodeAction<InvocationExpressionSyntax>(Go, SyntaxKind.InvocationExpression);
-        context.RegisterSyntaxNodeAction<PrimaryConstructorBaseTypeSyntax>(Go, PrimaryConstructorBaseType);
-        context.RegisterSyntaxNodeAction<ImplicitObjectCreationExpressionSyntax>(Go, ImplicitObjectCreationExpression);
+
+        context
+           .RegisterSyntaxNodeAction<VariableDeclaratorSyntax>(Go, VariableDeclarator)
+           .RegisterSyntaxNodeAction<ElementAccessExpressionSyntax>(Go, ElementAccessExpression)
+           .RegisterSyntaxNodeAction<ObjectCreationExpressionSyntax>(Go, ObjectCreationExpression)
+           .RegisterSyntaxNodeAction<InvocationExpressionSyntax>(Go, SyntaxKind.InvocationExpression)
+           .RegisterSyntaxNodeAction<PrimaryConstructorBaseTypeSyntax>(Go, PrimaryConstructorBaseType)
+           .RegisterSyntaxNodeAction<ImplicitObjectCreationExpressionSyntax>(Go, ImplicitObjectCreationExpression);
     }
 
     static void Go(SyntaxNodeAnalysisContext context, VariableDeclaratorSyntax _) => Go(context, argumentList: null);
