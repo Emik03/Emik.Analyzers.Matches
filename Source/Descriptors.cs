@@ -40,7 +40,17 @@ public static class Descriptors
             DiagnosticSeverity.Error,
             "Capture group doesn't exist",
             $"This will cause an {nameof(ArgumentOutOfRangeException)} at runtime.",
-            $"This will cause an {nameof(ArgumentOutOfRangeException)} at runtime."
+            $"This will cause an {nameof(ArgumentOutOfRangeException)} at runtime. Use the overload with {{0}} out parameters."
+        );
+
+    /// <summary>Gets the descriptor describing that this capture group cannot exist.</summary>
+    public static DiagnosticDescriptor Eam005 { get; } =
+        Make(
+            4,
+            DiagnosticSeverity.Warning,
+            "Non-constant argument may have wrong number of capture groups",
+            $"This may cause an {nameof(ArgumentOutOfRangeException)} at runtime.",
+            $"This may cause an {nameof(ArgumentOutOfRangeException)} at runtime. Consider referencing a pre-determinable {nameof(Regex)} object."
         );
 
     /// <summary>Creates a diagnostic from a <see cref="RegexStatus"/>.</summary>
@@ -55,6 +65,18 @@ public static class Descriptors
             RegexStatus.Invalid => Eam002,
             RegexStatus.Timeout => Eam003,
             _ => throw new ArgumentOutOfRangeException(nameof(status), status, null),
+        };
+
+    /// <summary>Creates a diagnostic from two lengths.</summary>
+    /// <param name="expectedNumberOfGroups">The expected amount of groups, if applicable.</param>
+    /// <param name="actualNumberOfGroups">The actual amount of groups.</param>
+    /// <returns>The equivalent <see cref="DiagnosticDescriptor"/> from the arguments.</returns>
+    public static DiagnosticDescriptor? From(int? expectedNumberOfGroups, int actualNumberOfGroups) =>
+        expectedNumberOfGroups switch
+        {
+            not null when expectedNumberOfGroups == actualNumberOfGroups => null,
+            not null => Eam004,
+            _ => Eam005,
         };
 
     static DiagnosticDescriptor Make(
