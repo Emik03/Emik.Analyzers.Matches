@@ -30,6 +30,7 @@ public sealed class RegexAnalyzer : DiagnosticAnalyzer
 
         var regex = FromSymbolWithGeneratedRegex(arg, model, token);
         regex ??= FromObjectCreation(arg, model, token);
+        regex ??= FromField(arg, model, token);
 
         var requiredNumberOfGroups = regex?.GetGroupNumbers().Length;
         var numberOfGroups = method.Parameters.Count(IsGroup);
@@ -43,15 +44,36 @@ public sealed class RegexAnalyzer : DiagnosticAnalyzer
     }
 
     static IMethodSymbol? TryGetRegexDeconstructMethod(
-        InvocationExpressionSyntax arg,
+        InvocationExpressionSyntax syntax,
         SemanticModel model,
         CancellationToken token
     ) =>
-        model.GetSymbolInfo(arg.Expression, token).Symbol is IMethodSymbol
+        model.GetSymbolInfo(syntax.Expression, token).Symbol is IMethodSymbol
         {
             ContainingNamespace.Name: nameof(Emik), Name: nameof(Match), ReturnType.Name: nameof(Boolean),
         } method
             ? method
+            : null;
+
+    static Regex? FromConstructor(
+        ObjectCreationExpressionSyntax syntax,
+        SemanticModel model,
+        CancellationToken token
+    ) =>
+        model.GetSymbolInfo(syntax.Type, token).Symbol is ITypeSymbol { Name: nameof(Regex) } &&
+        syntax.ArgumentList?.Arguments.ToArray() is [var argument, .. var rest] &&
+        model.GetConstantValue(argument.Expression, token) is { HasValue: true, Value: string pattern } &&
+        GetConstantValue(model, rest) is var options
+            ? RegexCache.Get(pattern, options)
+            : null;
+
+    static Regex? FromObjectCreation(
+        InvocationExpressionSyntax syntax,
+        SemanticModel model,
+        CancellationToken token
+    ) =>
+        syntax.Expression is MemberAccessExpressionSyntax { Expression: ObjectCreationExpressionSyntax creation }
+            ? FromConstructor(creation, model, token)
             : null;
 
     static Regex? FromSymbolWithGeneratedRegex(
@@ -68,22 +90,6 @@ public sealed class RegexAnalyzer : DiagnosticAnalyzer
            .GetAttributes()
            .SingleOrDefault(IsGeneratedRegex) is { ConstructorArguments: [{ Value: string pattern }, .. var rest] }
             ? RegexCache.Get(pattern, rest.FirstOrDefault().Value as RegexOptions? ?? RegexOptions.None)
-            : null;
-
-    static Regex? FromObjectCreation(
-        InvocationExpressionSyntax arg,
-        SemanticModel model,
-        CancellationToken token
-    ) =>
-        arg.Expression is MemberAccessExpressionSyntax
-        {
-            Expression: ObjectCreationExpressionSyntax { Type: var type } creation,
-        } &&
-        model.GetSymbolInfo(type, token).Symbol is ITypeSymbol { Name: nameof(Regex) } &&
-        creation.ArgumentList?.Arguments.ToArray() is [var argument, .. var rest] &&
-        model.GetConstantValue(argument.Expression, token) is { HasValue: true, Value: string pattern } &&
-        GetConstantValue(model, rest) is var options
-            ? RegexCache.Get(pattern, options)
             : null;
 
     static RegexOptions GetConstantValue(SemanticModel model, IEnumerable<ArgumentSyntax>? rest) =>
