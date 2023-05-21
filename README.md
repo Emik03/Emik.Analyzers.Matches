@@ -26,7 +26,7 @@ const string ValidatorQuery = @"^\d{2}$";
 [GeneratedRegex(ValidatorQuery)]
 partial Regex Validator();
 
-byte? Test([Emik.Match(Validator)] string x)
+byte? Test([Emik.Match(ValidatorQuery)] string x)
 {
     if (!Validator().IsMatch(out var capture)) // OK
         return null;
