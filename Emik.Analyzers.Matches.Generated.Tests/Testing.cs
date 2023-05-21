@@ -5,18 +5,28 @@ namespace Emik.Analyzers.Matches.Generated.Tests;
 // ReSharper disable NotAccessedPositionalProperty.Global
 partial record B([Match(@"^\d*$")] string? Unused = default)
 {
+    static readonly Regex s_runtimeFieldRegex = Random.Shared.Next(2) is 0 ? new("foo") : new("bar");
+
     static readonly Regex s_fieldRegex = new("a(b)");
 
     static Regex PropertyRegexBody => new("a(b)");
 
     static Regex PropertyRegexInitializer { get; } = new("a(b)");
 
+    // ReSharper disable once ConvertToAutoPropertyWhenPossible
+    static Regex RuntimePropertyRegexBody => s_runtimeFieldRegex;
+
+    // ReSharper disable once ReplaceAutoPropertyWithComputedProperty
+    static Regex RuntimePropertyRegexInitializer { get; } = s_runtimeFieldRegex;
+
     public string this[[Match(@"^\d*$")] string a] => a;
 
-    [GeneratedRegex("foobar(a)")]
-    private static partial Regex PartialMethodRegex();
+    // [GeneratedRegex("foobar(a)")]
+    // private static partial Regex PartialMethodRegex();
 
     static Regex MethodBodyRegex() => new("a(b)");
+
+    static Regex RuntimeMethodBodyRegex() => s_runtimeFieldRegex;
 
     public static void DoesItWork()
     {
@@ -26,7 +36,9 @@ partial record B([Match(@"^\d*$")] string? Unused = default)
             Yes = "017893567891",
             NotGood = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaatt";
 
-        Regex regex = new("foobar(a)");
+        Regex
+            regex = new("foobar(a)"),
+            runtimeRegex = s_runtimeFieldRegex;
 
         // This should pass.
         _ = Static(Yes);
@@ -37,14 +49,14 @@ partial record B([Match(@"^\d*$")] string? Unused = default)
         Discard(Yes);
         Static(Yes, Yes, Yes, Yes);
 
-        _ = new Regex("(a)(b)").Match("");
-        PartialMethodRegex().Match("", out _, out _);
-        new Regex("foobar(a)").Match("", out _, out _);
-        s_fieldRegex.Match("", out _, out _);
-        PropertyRegexBody.Match("", out _, out _);
-        PropertyRegexInitializer.Match("", out _, out _);
-        regex.Match("", out _, out _);
-        MethodBodyRegex().Match("", out _, out _);
+        // PartialMethodRegex().IsMatch("", out _, out _);
+        _ = new Regex("(a)(b)").IsMatch("");
+        new Regex("foobar(a)").IsMatch("", out _, out _);
+        s_fieldRegex.IsMatch("", out _, out _);
+        PropertyRegexBody.IsMatch("", out _, out _);
+        PropertyRegexInitializer.IsMatch("", out _, out _);
+        regex.IsMatch("", out _, out _);
+        MethodBodyRegex().IsMatch("", out _, out _);
 
         // These should all error.
         _ = Static(No);
@@ -55,13 +67,12 @@ partial record B([Match(@"^\d*$")] string? Unused = default)
         Discard(No);
         Static(No, No, No, No);
 
-        PartialMethodRegex().Match("", out _);
-        new Regex("foobar(a)").Match("", out _);
-        s_fieldRegex.Match("", out _);
-        PropertyRegexBody.Match("", out _);
-        PropertyRegexInitializer.Match("", out _);
-        regex.Match("", out _);
-        MethodBodyRegex().Match("", out _);
+        new Regex("foobar(a)").IsMatch("", out _);
+        s_fieldRegex.IsMatch("", out _);
+        PropertyRegexBody.IsMatch("", out _);
+        PropertyRegexInitializer.IsMatch("", out _);
+        regex.IsMatch("", out _);
+        MethodBodyRegex().IsMatch("", out _);
 
         // These should all give a warning.
         _ = Static(Yes[..]);
@@ -71,7 +82,11 @@ partial record B([Match(@"^\d*$")] string? Unused = default)
         B unused11 = Yes[..], unused12 = Yes[..];
         Discard(Yes[..]);
 
-
+        s_runtimeFieldRegex.IsMatch("", out _, out _, out _, out _);
+        RuntimePropertyRegexBody.IsMatch("", out _, out _);
+        RuntimePropertyRegexInitializer.IsMatch("", out _, out _);
+        runtimeRegex.IsMatch("", out _, out _);
+        RuntimeMethodBodyRegex().IsMatch("", out _, out _);
 
         // This should give a hint.
         EvilRegex(NotGood);
