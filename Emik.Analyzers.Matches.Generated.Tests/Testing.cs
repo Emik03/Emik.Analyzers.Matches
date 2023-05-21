@@ -8,24 +8,33 @@ static class Extensions
 
 partial record B([Match(@"^\d*$")] string? Unused = default)
 {
-    static readonly Regex s_regex = new("a(b)");
+    static readonly Regex s_fieldRegex = new("a(b)");
+
+    static Regex PropertyRegexBody => new("a(b)");
+
+    static Regex PropertyRegexInitializer { get; } = new("a(b)");
 
     public string this[[Match(@"^\d*$")] string a] => a;
 
-    [GeneratedRegex("foobar(a)(b)")]
-    private static partial Regex EvenBetter();
+    [GeneratedRegex("foobar(a)")]
+    private static partial Regex PartialMethodRegex();
+
+    static Regex MethodBodyRegex() => new("a(b)");
 
     // Assembly 1
-    public static Regex Rgx() => new Regex("foobar(a)(b)");
+    public static Regex Rgx() => new("foobar(a)(b)");
 
     // Assembly 2
     public static void DoesItWork()
     {
         const string Yes = "017893567891";
 
-        EvenBetter().Match("", out var a, out var b, out var c);
-        new Regex("foobar(a)(b)").Match("", out var d, out var e, out var f);
-        s_regex.Match("", out var d, out var e, out var f);
+        PartialMethodRegex().Match("", out var a, out var b);
+        new Regex("foobar(a)").Match("", out var c, out var d);
+        s_fieldRegex.Match("", out var e, out var ef);
+        PropertyRegexBody.Match("", out var g, out var h);
+        PropertyRegexInitializer.Match("", out var i, out var j);
+        MethodBodyRegex().Match("", out var k, out var l);
 
         Regex regex = new Regex("foobar(a)(b)");
 
