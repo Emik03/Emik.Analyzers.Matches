@@ -20,7 +20,25 @@ project, refer to its [README](https://github.com/Emik03/Emik.Morsels/blob/main/
 ## Example
 
 ```csharp
-string Test([Emik.Match(@"^\d{2}$")] string x) => x;
+[StringSyntax(StringSyntaxAttribute.Regex)]
+const string ValidatorQuery = @"^\d{2}$";
+
+[GeneratedRegex(ValidatorQuery)]
+partial Regex Validator();
+
+byte? Test([Emik.Match(Validator)] string x)
+{
+    if (!Validator().IsMatch(out var capture)) // OK
+        return null;
+
+    if (!Validator().IsMatch(out _, out var captureThatDoesNotExist)) // Error
+        return null;
+
+    if (!new Regex(x).IsMatch(out _)) // Warning: Not a constant
+        return null;
+
+    return byte.Parse(capture);
+}
 
 string TestTyped(X x) => x.Value;
 
@@ -39,8 +57,8 @@ Test("foobar"); // Error
 TestTyped("12"); // Error
 TestTyped("food"); // Error
 
-Test(System.Environment.NewLine); // Warning: Not a constant
-TestTyped(System.Environment.NewLine); // Warning: Not a constant
+Test(bool.FalseString); // Warning: Not a constant
+TestTyped(bool.TrueString); // Warning: Not a constant
 ```
 
 ## Lints
