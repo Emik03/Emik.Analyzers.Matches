@@ -15,8 +15,7 @@ public sealed class RegexGenerator : ISourceGenerator
     public static string Contents { get; } = Methods();
 
     /// <inheritdoc />
-    public void Execute(GeneratorExecutionContext context) =>
-        context.AddSource($"Emik.{TypeName}.g.cs", Contents);
+    public void Execute(GeneratorExecutionContext context) => context.AddSource($"Emik.{TypeName}.g.cs", Contents);
 
     /// <inheritdoc />
     public void Initialize(GeneratorInitializationContext context) { }
@@ -52,7 +51,7 @@ public sealed class RegexGenerator : ISourceGenerator
             {
             {{InitializeParameters(arg)}}
 
-                if (input == null)
+                if (regex == null || input == null)
                     return false;
 
                 var match = regex.Match(input);
