@@ -1,11 +1,8 @@
 // SPDX-License-Identifier: MPL-2.0
 namespace Emik.Analyzers.Matches.Generated.Tests;
+#pragma warning disable 0219, CA1819, IDE0059, MA0110
 
-static class Extensions
-{
-    public static bool Test(Type t, bool b, [Match("^$")] string a) => b;
-}
-
+// ReSharper disable NotAccessedPositionalProperty.Global
 partial record B([Match(@"^\d*$")] string? Unused = default)
 {
     static readonly Regex s_fieldRegex = new("a(b)");
@@ -21,26 +18,15 @@ partial record B([Match(@"^\d*$")] string? Unused = default)
 
     static Regex MethodBodyRegex() => new("a(b)");
 
-    // Assembly 1
-    public static Regex Rgx() => new("foobar(a)(b)");
-
-    // Assembly 2
     public static void DoesItWork()
     {
-        const string Yes = "017893567891";
+        // ReSharper disable once StringLiteralTypo
+        const string
+            No = "this should fail",
+            Yes = "017893567891",
+            NotGood = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaatt";
 
-        PartialMethodRegex().Match("", out var a, out var b);
-        new Regex("foobar(a)").Match("", out var c, out var d);
-        s_fieldRegex.Match("", out var e, out var ef);
-        PropertyRegexBody.Match("", out var g, out var h);
-        PropertyRegexInitializer.Match("", out var i, out var j);
-        MethodBodyRegex().Match("", out var k, out var l);
-
-        Regex regex = new Regex("foobar(a)(b)");
-
-        Rgx().Match("", out var x, out var y, out var z);
-
-        new Regex("").Match("");
+        Regex regex = new("foobar(a)");
 
         // This should pass.
         _ = Static(Yes);
@@ -49,27 +35,46 @@ partial record B([Match(@"^\d*$")] string? Unused = default)
         B unused1 = new(Yes), unused2 = new(Yes);
         B unused3 = Yes, unused4 = Yes;
         Discard(Yes);
+        Static(Yes, Yes, Yes, Yes);
+
+        _ = new Regex("(a)(b)").Match("");
+        PartialMethodRegex().Match("", out _, out _);
+        new Regex("foobar(a)").Match("", out _, out _);
+        s_fieldRegex.Match("", out _, out _);
+        PropertyRegexBody.Match("", out _, out _);
+        PropertyRegexInitializer.Match("", out _, out _);
+        regex.Match("", out _, out _);
+        MethodBodyRegex().Match("", out _, out _);
 
         // These should all error.
-        _ = Static("this should fail");
-        _ = new B().Instance("this should fail");
-        _ = new B()["this should fail"];
-        B unused5 = new("this should fail"), unused6 = new("this should fail");
-        B unused7 = "this should fail", unused8 = "this should fail";
-        Discard("this shosuld fail");
+        _ = Static(No);
+        _ = new B().Instance(No);
+        _ = new B()[No];
+        B unused5 = new(No), unused6 = new(No);
+        B unused7 = No, unused8 = No;
+        Discard(No);
+        Static(No, No, No, No);
+
+        PartialMethodRegex().Match("", out _);
+        new Regex("foobar(a)").Match("", out _);
+        s_fieldRegex.Match("", out _);
+        PropertyRegexBody.Match("", out _);
+        PropertyRegexInitializer.Match("", out _);
+        regex.Match("", out _);
+        MethodBodyRegex().Match("", out _);
 
         // These should all give a warning.
         _ = Static(Yes[..]);
         _ = new B().Instance(Yes[..]);
         _ = new B()[Yes[..]];
-        B unused9 = new(Yes[..]), unused10 = Yes[..];
+        B unused9 = new(Yes[..]), unused10 = new(Yes[..]);
         B unused11 = Yes[..], unused12 = Yes[..];
         Discard(Yes[..]);
 
-        Static("", "", "", "");
+
 
         // This should give a hint.
-        EvilRegex("bingbingbang ana boonk ana bonk ana ting witta tingtang");
+        EvilRegex(NotGood);
     }
 
     public static void Discard(B _) { }
