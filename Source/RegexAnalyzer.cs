@@ -8,7 +8,7 @@ public sealed class RegexAnalyzer : DiagnosticAnalyzer
 {
     /// <inheritdoc />
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
-        ImmutableArray.Create(Descriptors.Eam004);
+        ImmutableArray.Create(Descriptors.Eam004, Descriptors.Eam005);
 
     /// <inheritdoc />
     public override void Initialize(AnalysisContext context)
@@ -30,18 +30,79 @@ public sealed class RegexAnalyzer : DiagnosticAnalyzer
 
         var regex = FromSymbolWithGeneratedRegex(arg, model, token);
         regex ??= FromObjectCreation(arg, model, token);
-        regex ??= FromField(arg, model, token);
+        regex ??= FromReference(arg, model, token);
 
-        var requiredNumberOfGroups = regex?.GetGroupNumbers().Length;
-        var numberOfGroups = method.Parameters.Count(IsGroup);
+        var expected = regex?.GetGroupNumbers().Length;
+        var actual = method.Parameters.Count(IsGroup);
 
-        if (requiredNumberOfGroups == numberOfGroups)
-            return;
-
-        Diagnostic
-           .Create(Descriptors.Eam004, arg.GetLocation())
-           .Peek(context.ReportDiagnostic);
+        if (Descriptors.From(expected, actual) is { } descriptor)
+            Diagnostic.Create(descriptor, arg.GetLocation(), expected).Peek(context.ReportDiagnostic);
     }
+
+    static Regex? FromSymbolWithGeneratedRegex(
+        InvocationExpressionSyntax syntax,
+        SemanticModel model,
+        CancellationToken token
+    ) =>
+        Reference(syntax) is { } reference &&
+        model.GetSymbolInfo(reference, token).Symbol is IMethodSymbol candidate &&
+        candidate
+           .GetAttributes()
+           .SingleOrDefault(IsGeneratedRegex) is { ConstructorArguments: [{ Value: string pattern }, .. var rest] }
+            ? RegexCache.Get(pattern, rest.FirstOrDefault().Value as RegexOptions? ?? RegexOptions.None)
+            : null;
+
+    static Regex? FromObjectCreation(
+        InvocationExpressionSyntax syntax,
+        SemanticModel model,
+        CancellationToken token
+    ) =>
+        Constructor(syntax) is { } creation &&
+        model.GetSymbolInfo(creation.Type, token).Symbol is ITypeSymbol { Name: nameof(Regex) }
+            ? FromConstructor(creation, model, token)
+            : null;
+
+    static Regex? FromReference(
+        InvocationExpressionSyntax syntax,
+        SemanticModel model,
+        CancellationToken token
+    ) =>
+        Identifier(syntax.Expression as MemberAccessExpressionSyntax) is { } identifier &&
+        model.GetSymbolInfo(identifier, token).Symbol is { } symbol &&
+        TypeSymbol(symbol)?.Name is nameof(Regex)
+            ? symbol
+               .DeclaringSyntaxReferences
+               .Select(x => x.GetSyntax(token))
+               .Select(Initializer)
+               .Filter()
+               .Select(x => FromConstructor(x, model, token))
+               .SingleOrDefault()
+            : null;
+
+    static Regex? FromConstructor(
+        BaseObjectCreationExpressionSyntax syntax,
+        SemanticModel model,
+        CancellationToken token
+    ) =>
+        syntax.ArgumentList?.Arguments.ToArray() is [var argument, .. var rest] &&
+        model.GetConstantValue(argument.Expression, token) is { HasValue: true, Value: string pattern } &&
+        GetConstantValue(model, rest) is var options
+            ? RegexCache.Get(pattern, options)
+            : null;
+
+    static ExpressionSyntax? Reference(InvocationExpressionSyntax syntax) =>
+        ((syntax.Expression as MemberAccessExpressionSyntax)?.Expression as InvocationExpressionSyntax)?.Expression ??
+        syntax.ArgumentList.Arguments.FirstOrDefault()?.Expression;
+
+    static ObjectCreationExpressionSyntax? Constructor(InvocationExpressionSyntax syntax) =>
+        ((syntax.Expression as MemberAccessExpressionSyntax)?.Expression ??
+        syntax.ArgumentList.Arguments.FirstOrDefault()?.Expression) as ObjectCreationExpressionSyntax;
+
+    static RegexOptions GetConstantValue(SemanticModel model, IEnumerable<ArgumentSyntax>? rest) =>
+        rest?.FirstOrDefault() is { } options &&
+        model.GetConstantValue(options.Expression) is { HasValue: true, Value: int constant }
+            ? (RegexOptions)constant
+            : RegexOptions.None;
 
     static IMethodSymbol? TryGetRegexDeconstructMethod(
         InvocationExpressionSyntax syntax,
@@ -50,74 +111,65 @@ public sealed class RegexAnalyzer : DiagnosticAnalyzer
     ) =>
         model.GetSymbolInfo(syntax.Expression, token).Symbol is IMethodSymbol
         {
-            ContainingNamespace.Name: nameof(Emik), Name: nameof(Match), ReturnType.Name: nameof(Boolean),
+            Name: RegexGenerator.MethodName,
+            ReturnType.Name: nameof(Boolean),
+            ContainingNamespace.Name: nameof(Emik),
+            ContainingType.Name: RegexGenerator.TypeName,
         } method
             ? method
             : null;
 
-    static Regex? FromConstructor(
-        ObjectCreationExpressionSyntax syntax,
-        SemanticModel model,
-        CancellationToken token
-    ) =>
-        model.GetSymbolInfo(syntax.Type, token).Symbol is ITypeSymbol { Name: nameof(Regex) } &&
-        syntax.ArgumentList?.Arguments.ToArray() is [var argument, .. var rest] &&
-        model.GetConstantValue(argument.Expression, token) is { HasValue: true, Value: string pattern } &&
-        GetConstantValue(model, rest) is var options
-            ? RegexCache.Get(pattern, options)
-            : null;
-
-    static Regex? FromObjectCreation(
-        InvocationExpressionSyntax syntax,
-        SemanticModel model,
-        CancellationToken token
-    ) =>
-        syntax.Expression is MemberAccessExpressionSyntax { Expression: ObjectCreationExpressionSyntax creation }
-            ? FromConstructor(creation, model, token)
-            : null;
-
-    static Regex? FromSymbolWithGeneratedRegex(
-        InvocationExpressionSyntax arg,
-        SemanticModel model,
-        CancellationToken token
-    ) =>
-        arg.Expression is MemberAccessExpressionSyntax
+    static BaseObjectCreationExpressionSyntax? Initializer(SyntaxNode? symbol) =>
+        symbol switch
         {
-            Expression: InvocationExpressionSyntax { Expression: var reference },
-        } &&
-        model.GetSymbolInfo(reference, token).Symbol is IMethodSymbol candidate &&
-        candidate
-           .GetAttributes()
-           .SingleOrDefault(IsGeneratedRegex) is { ConstructorArguments: [{ Value: string pattern }, .. var rest] }
-            ? RegexCache.Get(pattern, rest.FirstOrDefault().Value as RegexOptions? ?? RegexOptions.None)
-            : null;
+            VariableDeclaratorSyntax x => x.Initializer?.Value,
+            BaseMethodDeclarationSyntax x => x.ExpressionBody?.Expression,
+            PropertyDeclarationSyntax x => x.Initializer?.Value ?? x.ExpressionBody?.Expression,
+            _ => null,
+        } as BaseObjectCreationExpressionSyntax;
 
-    static RegexOptions GetConstantValue(SemanticModel model, IEnumerable<ArgumentSyntax>? rest) =>
-        rest?.FirstOrDefault() is { } options &&
-        model.GetConstantValue(options.Expression) is { HasValue: true, Value: int constant }
-            ? (RegexOptions)constant
-            : RegexOptions.None;
+    static IdentifierNameSyntax? Identifier(MemberAccessExpressionSyntax? arg) =>
+        arg?.Expression switch
+        {
+            IdentifierNameSyntax x => x,
+            InvocationExpressionSyntax x => x.Expression as IdentifierNameSyntax,
+            _ => null,
+        };
 
-    static bool IsFromRegexGenerator(ImmutableArray<IParameterSymbol>.Enumerator args)
+    static ITypeSymbol? TypeSymbol(ISymbol? symbol) =>
+        symbol switch
+        {
+            IEventSymbol x => x.Type,
+            IFieldSymbol x => x.Type,
+            ILocalSymbol x => x.Type,
+            IDiscardSymbol x => x.Type,
+            IPropertySymbol x => x.Type,
+            IParameterSymbol x => x.Type,
+            IMethodSymbol x => x.ReturnType,
+            IArrayTypeSymbol x => x.ElementType,
+            _ => null,
+        };
+
+    static bool IsFromRegexGenerator(ImmutableArray<IParameterSymbol>.Enumerator enumerator)
     {
-        if (!args.MoveNext())
+        if (!enumerator.MoveNext())
             return false;
 
-        if (args.Current is { RefKind: RefKind.None, Type.Name: nameof(Regex) } && !args.MoveNext())
+        if (enumerator.Current is { RefKind: RefKind.None, Type.Name: nameof(Regex) } && !enumerator.MoveNext())
             return false;
 
-        if (args.Current is not { RefKind: RefKind.None, Type.Name: nameof(String) } || !args.MoveNext())
+        if (enumerator.Current is not { RefKind: RefKind.None, Type.Name: nameof(String) } || !enumerator.MoveNext())
             return false;
 
         do
-            if (!IsGroup(args.Current))
+            if (!IsGroup(enumerator.Current))
                 return false;
-        while (args.MoveNext());
+        while (enumerator.MoveNext());
 
         return true;
     }
 
-    static bool IsGeneratedRegex(AttributeData x) => x.AttributeClass?.Name is nameof(GeneratedRegexAttribute);
+    static bool IsGeneratedRegex(AttributeData data) => data.AttributeClass?.Name is nameof(GeneratedRegexAttribute);
 
     static bool IsGroup(IParameterSymbol parameter) => parameter is { RefKind: RefKind.Out, Type.Name: nameof(Group) };
 }
