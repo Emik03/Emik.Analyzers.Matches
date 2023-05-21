@@ -43,13 +43,11 @@ public sealed class MatchAnalyzer : DiagnosticAnalyzer
             {
                 ExpressionSyntax expression => Parameters(expression, model, token)
                    .Select(GetAttributes)
-                   .Filter()
                    .Select(ExpressionFromArgumentList)
                    .TakeWhile(x => x.Syntax is not null)
                    .Select(x => LocateMismatches(x.Data, x.Syntax)),
                 PrimaryConstructorBaseTypeSyntax primary => Parameters(primary, model, token)
                    .Select(GetAttributes)
-                   .Filter()
                    .Select(ExpressionFromArgumentList)
                    .TakeWhile(x => x.Syntax is not null)
                    .Select(x => LocateMismatches(x.Data, x.Syntax)),
@@ -57,15 +55,15 @@ public sealed class MatchAnalyzer : DiagnosticAnalyzer
                 {
                     Initializer.Value: var value, Parent: VariableDeclarationSyntax { Type: var type },
                 } when model.GetTypeInfo(type, token).Type is { } symbol => GetAttributes(symbol)
-                   .Select(x => LocateMismatches(x.Item1, value)),
+                   .Select(x => LocateMismatches(x, value)),
                 _ => Enumerable.Empty<Diagnostic>(),
             })
            .Filter()
            .Lazily(context.ReportDiagnostic)
            .Enumerate();
 
-        (AttributeData? Data, ExpressionSyntax? Syntax) ExpressionFromArgumentList(Tuple<AttributeData, int> data) =>
-            (data.Item1, argumentList?.Arguments.Nth(data.Item2)?.Expression);
+        (AttributeData? Data, ExpressionSyntax? Syntax) ExpressionFromArgumentList(AttributeData? data, int index) =>
+            (data, argumentList?.Arguments.Nth(index)?.Expression);
 
         Diagnostic? LocateMismatches(AttributeData? data, SyntaxNode? node) =>
             node is not null &&
@@ -77,17 +75,16 @@ public sealed class MatchAnalyzer : DiagnosticAnalyzer
                 : null;
     }
 
-    static Tuple<AttributeData, int>? GetAttributes(IParameterSymbol parameter) =>
+    static AttributeData? GetAttributes(IParameterSymbol parameter) =>
         parameter
            .GetAttributes()
-           .Select((x, i) => Tuple.Create(x, i))
-           .Concat(GetAttributes(parameter.Type))
-           .FirstOrDefault(x => x.Item1.AttributeClass?.Name is MatchGenerator.TypeName);
+           .AddRange(GetAttributes(parameter.Type))
+           .FirstOrDefault(x => x.AttributeClass?.Name is MatchGenerator.TypeName);
 
-    static IEnumerable<Tuple<AttributeData, int>> GetAttributes(ITypeSymbol type) =>
+    static IEnumerable<AttributeData> GetAttributes(ITypeSymbol type) =>
         type.TryFindSingleMethod(IsConversion, out var conversion)
-            ? conversion.Parameters.SelectMany(x => x.GetAttributes()).Select((x, i) => Tuple.Create(x, i))
-            : Enumerable.Empty<Tuple<AttributeData, int>>();
+            ? conversion.Parameters.SelectMany(x => x.GetAttributes())
+            : Enumerable.Empty<AttributeData>();
 
     static bool IsConversion(IMethodSymbol x) =>
         x is { MethodKind: MethodKind.Conversion, Parameters: [{ Type.Name: nameof(String) }] };
