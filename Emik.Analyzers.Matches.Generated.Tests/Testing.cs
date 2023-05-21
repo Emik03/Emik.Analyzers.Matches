@@ -5,6 +5,12 @@ namespace Emik.Analyzers.Matches.Generated.Tests;
 // ReSharper disable NotAccessedPositionalProperty.Global
 partial record B([Match(@"^\d*$")] string? Unused = default)
 {
+    // ReSharper disable once StringLiteralTypo
+    const string
+        No = "this should fail",
+        Yes = "017893567891",
+        NotGood = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaatt";
+
     static readonly Regex s_runtimeFieldRegex = Random.Shared.Next(2) is 0 ? new("foo") : new("bar");
 
     static readonly Regex s_fieldRegex = new("a(b)");
@@ -30,17 +36,8 @@ partial record B([Match(@"^\d*$")] string? Unused = default)
 
     public static void DoesItWork()
     {
-        // ReSharper disable once StringLiteralTypo
-        const string
-            No = "this should fail",
-            Yes = "017893567891",
-            NotGood = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaatt";
+        Regex regex = new("foobar(a)");
 
-        Regex
-            regex = new("foobar(a)"),
-            runtimeRegex = s_runtimeFieldRegex;
-
-        // This should pass.
         _ = Static(Yes);
         _ = new B().Instance(Yes);
         _ = new B()[Yes];
@@ -57,8 +54,10 @@ partial record B([Match(@"^\d*$")] string? Unused = default)
         PropertyRegexInitializer.IsMatch("", out _, out _);
         regex.IsMatch("", out _, out _);
         MethodBodyRegex().IsMatch("", out _, out _);
+    }
 
-        // These should all error.
+    public void Error()
+    {
         _ = Static(No);
         _ = new B().Instance(No);
         _ = new B()[No];
@@ -73,8 +72,12 @@ partial record B([Match(@"^\d*$")] string? Unused = default)
         PropertyRegexInitializer.IsMatch("", out _);
         regex.IsMatch("", out _);
         MethodBodyRegex().IsMatch("", out _);
+    }
 
-        // These should all give a warning.
+    public void Warning()
+    {
+        Regex runtimeRegex = s_runtimeFieldRegex;
+
         _ = Static(Yes[..]);
         _ = new B().Instance(Yes[..]);
         _ = new B()[Yes[..]];
@@ -87,10 +90,9 @@ partial record B([Match(@"^\d*$")] string? Unused = default)
         RuntimePropertyRegexInitializer.IsMatch("", out _, out _);
         runtimeRegex.IsMatch("", out _, out _);
         RuntimeMethodBodyRegex().IsMatch("", out _, out _);
-
-        // This should give a hint.
-        EvilRegex(NotGood);
     }
+
+    public void Hint() => EvilRegex(NotGood);
 
     public static void Discard(B _) { }
 
