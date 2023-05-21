@@ -74,9 +74,9 @@ public static class Descriptors
     public static DiagnosticDescriptor? From(int? expectedNumberOfGroups, int actualNumberOfGroups) =>
         expectedNumberOfGroups switch
         {
-            not null when expectedNumberOfGroups == actualNumberOfGroups => null,
-            not null => Eam004,
-            _ => Eam005,
+            { } x when x != actualNumberOfGroups => Eam004,
+            null => Eam005,
+            _ => null,
         };
 
     static DiagnosticDescriptor Make(
