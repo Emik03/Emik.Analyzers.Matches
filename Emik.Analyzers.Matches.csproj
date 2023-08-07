@@ -10,6 +10,5 @@
     </PropertyGroup>
     <ItemGroup>
         <PackageReference Remove="UnitGenerator"/>
-        <PackageReference Include="Gu.Roslyn.Extensions.Source" Version="0.17.0" PrivateAssets="all"/>
     </ItemGroup>
 </Project>
