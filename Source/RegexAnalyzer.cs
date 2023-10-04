@@ -48,8 +48,8 @@ public sealed class RegexAnalyzer : DiagnosticAnalyzer
         model.GetSymbolInfo(reference, token).Symbol is IMethodSymbol candidate &&
         candidate
            .GetAttributes()
-           .SingleOrDefault(IsGeneratedRegex) is { ConstructorArguments: [{ Value: string pattern }, .. var rest] }
-            ? RegexCache.Get(pattern, rest.FirstOrDefault().Value as RegexOptions? ?? RegexOptions.None)
+           .SingleOrDefault(IsGeneratedRegex) is { ConstructorArguments: [{ Value: string pattern }] args }
+            ? RegexCache.Get(pattern, args.Nth(1).Value is RegexOptions options ? options : RegexOptions.None)
             : null;
 
     static Regex? FromObjectCreation(
