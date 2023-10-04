@@ -3,8 +3,6 @@
         <TargetFramework>net7.0</TargetFramework>
     </PropertyGroup>
     <ItemGroup>
-        <PackageReference Remove="UnitGenerator"/>
-        <PackageReference Remove="Emik.Analyzers.Matches"/>
         <PackageReference Include="Emik.Unions" Version="2.1.1" PrivateAssets="all"/>
         <PackageReference Include="Emik.Results" Version="2.1.1" PrivateAssets="all"/>
     </ItemGroup>
