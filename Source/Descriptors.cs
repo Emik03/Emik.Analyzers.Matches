@@ -104,7 +104,7 @@ public static class Descriptors
             $"EAM{index}",
             title,
             messageFormat,
-            typeof(MatchAnalyzer).Namespace,
+            typeof(MatchAnalyzer).Namespace.OrEmpty(),
             severity,
             true,
             description,
