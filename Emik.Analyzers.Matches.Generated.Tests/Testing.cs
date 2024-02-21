@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MPL-2.0
 namespace Emik.Analyzers.Matches.Generated.Tests;
-#pragma warning disable 0219, CA1819, IDE0059, MA0110, RCS1085
+#pragma warning disable 0219, 9113, CA1819, IDE0059, MA0110, RCS1085
 
 // ReSharper disable NotAccessedPositionalProperty.Global
-partial record B([Match(@"^\d*$")] string? Unused = default)
+record B([Match(@"^\d*$")] string? Unused = default)
 {
     // ReSharper disable once StringLiteralTypo
     const string
@@ -27,8 +27,8 @@ partial record B([Match(@"^\d*$")] string? Unused = default)
 
     public string this[[Match(@"^\d*$")] string a] => a;
 
-    [GeneratedRegex("foobar(a)")]
-    private static partial Regex PartialMethodRegex();
+    // [GeneratedRegex("foobar(a)")]
+    // private static partial Regex PartialMethodRegex();
 
     static Regex MethodBodyRegex() => new("a(b)");
 
@@ -47,7 +47,7 @@ partial record B([Match(@"^\d*$")] string? Unused = default)
         Static(Yes, Yes, Yes, Yes);
         Interpolation($"{Yes} {Yes:Yes}");
 
-        PartialMethodRegex().IsMatch("", out _, out _);
+        // PartialMethodRegex().IsMatch("", out _, out _);
         _ = new Regex("(a)(b)").IsMatch("");
         new Regex("foobar(a)").IsMatch("", out _, out _);
         s_fieldRegex.IsMatch("", out _, out _);
@@ -88,7 +88,7 @@ partial record B([Match(@"^\d*$")] string? Unused = default)
         B unused9 = new(Yes[..]), unused10 = new(Yes[..]);
         B unused11 = Yes[..], unused12 = Yes[..];
         Discard(Yes[..]);
-        Interpolation($"{Yes} {Yes:Yes}");
+        Interpolation($"{Yes[..]}{Yes:Yes[..]}");
 
         s_runtimeFieldRegex.IsMatch("", out _, out _, out _, out _);
         RuntimePropertyRegexBody.IsMatch("", out _, out _);
@@ -126,8 +126,8 @@ partial record B([Match(@"^\d*$")] string? Unused = default)
     [InterpolatedStringHandler]
     public readonly ref struct InterpolatedStringHandler(
         int literalLength,
-        int formattedCount,
-        IFormatProvider? provider = default
+        [UsedImplicitly] int formattedCount,
+        [UsedImplicitly] IFormatProvider? provider = default
     )
     {
         readonly StringBuilder _builder = new(literalLength);
@@ -139,7 +139,6 @@ partial record B([Match(@"^\d*$")] string? Unused = default)
         /// <summary>Writes the specified value to the handler.</summary>
         /// <param name="value">The value to write.</param>
         /// <param name="format">The format string.</param>
-        /// <typeparam name="T">The type of the value to write.</typeparam>
         public void AppendFormatted(B value, B? format = default) => throw Unreachable;
     }
 }

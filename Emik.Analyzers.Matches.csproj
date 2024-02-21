@@ -8,4 +8,9 @@
         <Description>Analyzer for compile-time parameter validation with the power of regex.</Description>
         <PackageTags>Regex Match Group Capture String Parameter Argument Validation Validator Attribute Extensions Source Generator Analyzer Roslyn</PackageTags>
     </PropertyGroup>
+    <ItemGroup>
+      <Compile Update="..\Emik.Morsels\Compile\Source\References\Emik\Roslyn\LightweightOverloadResolution.cs">
+        <Link>Source\References\Emik\Roslyn\LightweightOverloadResolution.cs</Link>
+      </Compile>
+    </ItemGroup>
 </Project>
