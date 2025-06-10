@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
-        <FileVersion>1.3</FileVersion>
+        <FileVersion>1.3.1</FileVersion>
         <TargetFramework>netstandard2.0</TargetFramework>
         <RepositoryUrl>https://github.com/Emik03/Emik.Analyzers.Matches</RepositoryUrl>
         <Description>Analyzer for compile-time parameter validation with the power of regex.</Description>

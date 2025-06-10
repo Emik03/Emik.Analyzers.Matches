@@ -70,7 +70,7 @@ public sealed class MatchAnalyzer : DiagnosticAnalyzer
             var format = TypeIn(interpolation.FormatClause);
             var alignment = TypeIn(interpolation.AlignmentClause);
 
-            Predicate<IMethodSymbol>? Predicate(Strictness s) => // ReSharper disable AccessToModifiedClosure
+            Predicate<IMethodSymbol>? Predicate(Strictness s) =>
                 s is Strictness.Exact
                     ? x => TypeSymbolComparer.Equal(x.Parameters.FirstOrDefault()?.Type, expression) &&
                         TypeSymbolComparer.Equal(Alignment(x)?.Type, alignment) &&
@@ -92,8 +92,6 @@ public sealed class MatchAnalyzer : DiagnosticAnalyzer
                             Strictness.Implicitly => true,
                             _ => throw new InvalidOperationException($"{s}"),
                         };
-
-            // ReSharper restore AccessToModifiedClosure
 
             var method = formatted.FirstOrDefault(Predicate(Strictness.Exact)) ??
                 formatted.FirstOrDefault(Predicate(Strictness.ImplicitlyAndConstrained)) ??
@@ -118,6 +116,7 @@ public sealed class MatchAnalyzer : DiagnosticAnalyzer
 
         IEnumerable<Diagnostic?> Diagnostics(IEnumerable<IParameterSymbol> parameters) =>
             parameters
+               .Take(argumentList?.Arguments.Count ?? 1)
                .Select(GetAttributesIncludingInformationFromInterpolatedStringHandlerAttribute)
                .Select(ExpressionFromArgumentList)
                .SelectMany(x => LocateInterpolationMismatches(x).Prepend(LocateMismatches(x.Couple.Data, x.Syntax)));
@@ -220,7 +219,7 @@ public sealed class MatchAnalyzer : DiagnosticAnalyzer
 
         try
         {
-            return RegexCache.Get(pattern, options)?.IsMatch($"{input}") is false
+            return RegexCache.Get(pattern, options) is { } regex && !regex.IsMatch($"{input}")
                 ? RegexStatus.Failed
                 : RegexStatus.Passed;
         }
@@ -249,7 +248,7 @@ public sealed class MatchAnalyzer : DiagnosticAnalyzer
         {
             IMethodSymbol m => m.Parameters,
             IPropertySymbol p => p.Parameters,
-            _ => ImmutableArray<IParameterSymbol>.Empty,
+            _ => [],
         } is var parameters &&
         parameters is [.., { IsParams: true } last]
             ? parameters.Concat(last.Forever())
