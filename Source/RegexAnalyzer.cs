@@ -44,30 +44,17 @@ public sealed class RegexAnalyzer : DiagnosticAnalyzer
         if (TryGetRegexDeconstructMethod(arg, model, token) is not { } method)
             return;
 
-        0.Debug();
-
         if (!IsFromRegexGenerator(method.Parameters.GetEnumerator()))
             return;
 
-        1.Debug();
         var regex = FromSymbolWithGeneratedRegex(arg, model, token);
-        2.Debug();
         regex ??= FromObjectCreation(arg, model, token);
-        3.Debug();
         regex ??= FromReference(arg, model, token);
-        4.Debug();
         var expected = regex?.GetGroupNumbers().Length;
-        5.Debug();
         var actual = method.Parameters.Count(IsGroup);
-        6.Debug();
 
         if (Descriptors.From(expected, actual) is { } descriptor)
-        {
-            7.Debug();
             Diagnostic.Create(descriptor, arg.GetLocation(), expected).Peek(context.ReportDiagnostic);
-        }
-
-        8.Debug();
     }
 
     static Regex? FromSymbolWithGeneratedRegex(
