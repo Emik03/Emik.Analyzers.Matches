@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MPL-2.0
 namespace Emik.Analyzers.Matches.Generated.Tests;
-#pragma warning disable 0219, 9113, CA1819, IDE0059, MA0110, RCS1085
+#pragma warning disable CS0219, CS9113, CA1819, GU0011, GU0073, IDE0032, IDE0059, MA0009, MA0110, RCS1085, SYSLIB1045
 
 // ReSharper disable NotAccessedPositionalProperty.Global
-record B([Match(@"^\d*$")] string? Unused = default)
+sealed partial record B([Match(@"^\d*$")] string? Unused = null)
 {
     // ReSharper disable once StringLiteralTypo
     const string
@@ -27,8 +27,8 @@ record B([Match(@"^\d*$")] string? Unused = default)
 
     public string this[[Match(@"^\d*$")] string a] => a;
 
-    // [GeneratedRegex("foobar(a)")]
-    // private static partial Regex PartialMethodRegex();
+    [GeneratedRegex("foobar(a)")]
+    private static partial Regex PartialMethodRegex();
 
     static Regex MethodBodyRegex() => new("a(b)");
 
@@ -36,8 +36,10 @@ record B([Match(@"^\d*$")] string? Unused = default)
 
     public static void DoesItWork()
     {
-        Regex regex = new("foobar(a)");
+        Regex regex = new("foobar(a)"); // ReSharper disable once ConvertToConstant.Local InlineTemporaryVariable
 
+        var s = Yes;
+        AllowRuntimeValues(s, Yes.Replace(Yes, Yes));
         _ = Static(Yes);
         _ = new B().Instance(Yes);
         _ = new B()[Yes];
@@ -47,13 +49,13 @@ record B([Match(@"^\d*$")] string? Unused = default)
         Static(Yes, Yes, Yes, Yes);
         Interpolation($"{Yes} {Yes:Yes}");
 
-        // PartialMethodRegex().IsMatch("", out _, out _);
         _ = new Regex("(a)(b)").IsMatch("");
         new Regex("foobar(a)").IsMatch("", out _, out _);
         s_fieldRegex.IsMatch("", out _, out _);
         PropertyRegexBody.IsMatch("", out _, out _);
         PropertyRegexInitializer.IsMatch("", out _, out _);
         regex.IsMatch("", out _, out _);
+        PartialMethodRegex().IsMatch("", out _, out _);
         MethodBodyRegex().IsMatch("", out _, out _);
     }
 
@@ -61,6 +63,7 @@ record B([Match(@"^\d*$")] string? Unused = default)
     {
         Regex regex = new("foobar(a)");
 
+        AllowRuntimeValues(No, "", "a", "a lot");
         _ = Static(No);
         _ = new B().Instance(No);
         _ = new B()[No];
@@ -75,6 +78,7 @@ record B([Match(@"^\d*$")] string? Unused = default)
         PropertyRegexBody.IsMatch("", out _);
         PropertyRegexInitializer.IsMatch("", out _);
         regex.IsMatch("", out _);
+        PartialMethodRegex().IsMatch("", out _);
         MethodBodyRegex().IsMatch("", out _);
     }
 
@@ -101,11 +105,13 @@ record B([Match(@"^\d*$")] string? Unused = default)
 
     public static void Discard(B _) { }
 
+    public static string[] AllowRuntimeValues([Match("(?!x)x", true)] params string[] a) => a;
+
     public static string[] Static([Match(@"^\d*$")] params string[] a) => a;
 
     public static string Static([Match(@"^\d*$")] string a) => a;
 
-    public static string Interpolation(InterpolatedStringHandler a) => throw Unreachable;
+    public static string Interpolation(InterpolatedStringHandler a) => throw new UnreachableException();
 
     // ReSharper disable once MemberCanBeMadeStatic.Global
     public string Instance([Match(@"^\d*$")] string a) => a;
@@ -127,7 +133,7 @@ record B([Match(@"^\d*$")] string? Unused = default)
     public readonly ref struct InterpolatedStringHandler(
         int literalLength,
         [UsedImplicitly] int formattedCount,
-        [UsedImplicitly] IFormatProvider? provider = default
+        [UsedImplicitly] IFormatProvider? provider = null
     )
     {
         readonly StringBuilder _builder = new(literalLength);
@@ -139,7 +145,7 @@ record B([Match(@"^\d*$")] string? Unused = default)
         /// <summary>Writes the specified value to the handler.</summary>
         /// <param name="value">The value to write.</param>
         /// <param name="format">The format string.</param>
-        public void AppendFormatted(B value, B? format = default) => throw Unreachable;
+        public void AppendFormatted(B value, B? format = null) => throw new UnreachableException();
     }
 }
 

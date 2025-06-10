@@ -3,12 +3,31 @@ namespace Emik.Analyzers.Matches;
 
 /// <inheritdoc />
 // ReSharper disable MissingIndent WrongIndentSize
-[DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.FSharp, LanguageNames.VisualBasic)]
+[CLSCompliant(false), DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.FSharp, LanguageNames.VisualBasic)]
 public sealed class RegexAnalyzer : DiagnosticAnalyzer
 {
     /// <inheritdoc />
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
-        ImmutableArray.Create(Descriptors.Eam004, Descriptors.Eam005, Descriptors.Eam006);
+        [Descriptors.Eam004, Descriptors.Eam005, Descriptors.Eam006];
+
+    /// <summary>Deconstructs the constants.</summary>
+    /// <param name="array">The arguments to deconstruct.</param>
+    /// <returns>The values.</returns>
+    public static (string Pattern, RegexOptions Options, bool AllowRuntimeValues)? Deconstruct(
+        ImmutableArray<TypedConstant>? array
+    ) =>
+        array switch
+        {
+            [{ Value: string pattern }] => (pattern, RegexOptions.None, false),
+            [{ Value: string pattern }, { Value: int options }] => (pattern, (RegexOptions)options, false),
+            [{ Value: string pattern }, { Value: bool allowRuntimeValues }] =>
+                (pattern, RegexOptions.None, allowRuntimeValues),
+            [{ Value: string pattern }, { Value: int options }, { Value: bool allowRuntimeValues }] =>
+                (pattern, (RegexOptions)options, allowRuntimeValues),
+            [{ Value: string pattern }, { Value: bool allowRuntimeValues }, { Value: int options }] =>
+                (pattern, (RegexOptions)options, allowRuntimeValues),
+            _ => null,
+        };
 
     /// <inheritdoc />
     public override void Initialize(AnalysisContext context)
@@ -31,7 +50,6 @@ public sealed class RegexAnalyzer : DiagnosticAnalyzer
         var regex = FromSymbolWithGeneratedRegex(arg, model, token);
         regex ??= FromObjectCreation(arg, model, token);
         regex ??= FromReference(arg, model, token);
-
         var expected = regex?.GetGroupNumbers().Length;
         var actual = method.Parameters.Count(IsGroup);
 
@@ -46,10 +64,9 @@ public sealed class RegexAnalyzer : DiagnosticAnalyzer
     ) =>
         Reference(syntax) is { } reference &&
         model.GetSymbolInfo(reference, token).Symbol is IMethodSymbol candidate &&
-        candidate
-           .GetAttributes()
-           .SingleOrDefault(IsGeneratedRegex) is { ConstructorArguments: [{ Value: string pattern }] args }
-            ? RegexCache.Get(pattern, args.Nth(1).Value is RegexOptions options ? options : RegexOptions.None)
+        candidate.GetAttributes().SingleOrDefault(IsGeneratedRegex) is { ConstructorArguments: var args } &&
+        Deconstruct(args) is var (pattern, options, _)
+            ? RegexCache.Get(pattern, options)
             : null;
 
     static Regex? FromObjectCreation(

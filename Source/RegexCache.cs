@@ -6,12 +6,11 @@ using CachePair = KeyValuePair<(string, RegexOptions), Pair>;
 /// <summary>Handles regex caching.</summary>
 public static class RegexCache
 {
-    // 256 is a common allocation block size. Prevent dictionary from becoming that large.
-    const int MaxCacheSize = 255;
+    // 256 is a common allocation block size. Prevent dictionary from becoming any larger.
+    const int MaxCacheSize = 256;
 
-    static readonly TimeSpan s_maxMatchingTime = TimeSpan.FromMilliseconds(250);
-
-    static readonly TimeSpan s_maxCacheTime = TimeSpan.FromMinutes(5);
+    static readonly TimeSpan s_maxMatchingTime = TimeSpan.FromMilliseconds(200),
+        s_maxCacheTime = TimeSpan.FromMinutes(5);
 
     static readonly ConcurrentDictionary<(string, RegexOptions), Pair> s_cache = new();
 
@@ -36,12 +35,7 @@ public static class RegexCache
         return regex;
     }
 
-    static void ClearOldRegexes() =>
-        s_cache
-           .Where(IsOld)
-           .Append(s_cache.Aggregate(Older))
-           .ToList()
-           .ForEach(TryRemove);
+    static void ClearOldRegexes() => s_cache.Where(IsOld).Append(s_cache.Aggregate(Older)).ToList().ForEach(TryRemove);
 
     static void TryRemove(CachePair x) => s_cache.TryRemove(x.Key, out _);
 

@@ -34,29 +34,29 @@ public sealed class RegexGenerator() : FixedGenerator($"Emik.{TypeName}", Conten
         CSharp(
             2,
             $$"""
-            public static bool {{MethodName}}(
-                [global::System.Diagnostics.CodeAnalysis.NotNullWhen(true)] this global::System.Text.RegularExpressions.Regex? regex,
-                [global::System.Diagnostics.CodeAnalysis.NotNullWhen(true)] string? input,
-            {{Parameter(overload)}}
-            )
-            {
-            {{InitializeParameters(overload)}}
+              public static bool {{MethodName}}(
+                  [global::System.Diagnostics.CodeAnalysis.NotNullWhen(true)] this global::System.Text.RegularExpressions.Regex? regex,
+                  [global::System.Diagnostics.CodeAnalysis.NotNullWhen(true)] string? input,
+              {{Parameter(overload)}}
+              )
+              {
+              {{InitializeParameters(overload)}}
 
-                if (regex == null || input == null)
-                    return false;
+                  if (regex == null || input == null)
+                      return false;
 
-                var match = regex.Match(input);
+                  var match = regex.Match(input);
 
-                if (!match.Success)
-                    return false;
+                  if (!match.Success)
+                      return false;
 
-                global::System.Diagnostics.Debug.Assert(match.Groups.Count == {{overload}}, "Group count must be {{overload}}.");
+                  global::System.Diagnostics.Debug.Assert(match.Groups.Count == {{overload}}, "Group count must be {{overload}}.");
 
-            {{SetParametersToGroups(overload)}}
+              {{SetParametersToGroups(overload)}}
 
-                return true;
-            }
-            """
+                  return true;
+              }
+              """
         );
 
     static string Parameter(int length) =>

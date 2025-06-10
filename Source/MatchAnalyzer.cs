@@ -4,12 +4,12 @@ namespace Emik.Analyzers.Matches;
 using Couple = (AttributeData? Data, SmallList<IMethodSymbol> AppendFormatted, IMethodSymbol? AppendLiteral);
 
 /// <inheritdoc />
-[DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.FSharp, LanguageNames.VisualBasic)]
+[CLSCompliant(false), DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.FSharp, LanguageNames.VisualBasic)]
 public sealed class MatchAnalyzer : DiagnosticAnalyzer
 {
     /// <inheritdoc />
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
-        ImmutableArray.Create(Descriptors.Eam001, Descriptors.Eam002, Descriptors.Eam003);
+        [Descriptors.Eam001, Descriptors.Eam002, Descriptors.Eam003];
 
     /// <inheritdoc />
     public override void Initialize(AnalysisContext context)
@@ -38,54 +38,31 @@ public sealed class MatchAnalyzer : DiagnosticAnalyzer
 
     static void Go(SyntaxNodeAnalysisContext context, PrimaryConstructorBaseTypeSyntax arg) =>
         Go(context, arg.ArgumentList);
-
+#pragma warning disable MA0051
     static void Go(in SyntaxNodeAnalysisContext context, BaseArgumentListSyntax? argumentList)
+#pragma warning restore MA0051
     {
         var (compilation, token, node, model) =
             (context.Compilation, context.CancellationToken, context.Node, context.SemanticModel);
 
-        IEnumerable<Diagnostic?> Diagnostics(IEnumerable<IParameterSymbol> parameters) =>
-            parameters
-               .Select(GetAttributesIncludingInformationFromInterpolatedStringHandlerAttribute)
-               .Select(ExpressionFromArgumentList)
-               .SelectMany(x => LocateInterpolationMismatches(x).Prepend(LocateMismatches(x.Couple.Data, x.Syntax)));
-
-        IEnumerable<Diagnostic?> ManyDiagnostics(InterpolatedStringContentSyntax x) =>
-            Diagnostics((model.GetSymbolInfo(x, token).Symbol as IMethodSymbol)?.Parameters);
-
-        (Couple Couple, ExpressionSyntax? Syntax) ExpressionFromArgumentList(Couple couple, int index) =>
-            (couple, argumentList?.Arguments.Nth(index)?.Expression);
-
-        IEnumerable<Diagnostic?> LocateInterpolationMismatches((Couple Couple, ExpressionSyntax? Syntax) tuple) =>
-            tuple is ((_, var formatted, { } literal), InterpolatedStringExpressionSyntax { Contents: [_, ..] xs }) &&
-            GetAttributes(literal.Parameters.FirstOrDefault()) is var data
-                ? xs.SelectMany(x => x is InterpolationSyntax i ? Enumerable(i, formatted) : LocateMismatches(data, x).Yield())
-                : [];
-
         Diagnostic? LocateMismatches(AttributeData? data, SyntaxNode? node) =>
             node is not null &&
-            data?.ConstructorArguments is [{ Value: string pattern }, { Value: int options }] &&
+            RegexAnalyzer.Deconstruct(data?.ConstructorArguments) is var (pattern, options, allowRuntimeValues) &&
             model.GetConstantValue(node, token) is var constant &&
-            Match(constant, pattern, options) is var match &&
+            Match(constant, pattern, options, allowRuntimeValues) is var match &&
             Descriptors.From(match) is { } descriptor
                 ? Diagnostic.Create(descriptor, node.GetLocation(), pattern)
                 : null;
 
-        (node switch
-            {
-                ExpressionSyntax expression => Diagnostics(Parameters(expression, model, token)),
-                PrimaryConstructorBaseTypeSyntax primary => Diagnostics(Parameters(primary, model, token)),
-                VariableDeclaratorSyntax
-                    {
-                        Initializer.Value: var value, Parent: VariableDeclarationSyntax { Type: var type },
-                    } when model.GetTypeInfo(value, token).Type?.SpecialType is SpecialType.System_String &&
-                    model.GetTypeInfo(type, token).Type is { } symbol
-                    => GetAttributes(symbol).Select(x => LocateMismatches(x, value)),
-                _ => [],
-            })
-           .Filter()
-           .Lazily(context.ReportDiagnostic)
-           .Enumerate();
+        IEnumerable<Diagnostic?> LocateInterpolationMismatches((Couple Couple, ExpressionSyntax? Syntax) tuple) =>
+            tuple is ((_, var formatted, { } literal), InterpolatedStringExpressionSyntax { Contents: [_, ..] xs }) &&
+            GetAttributes(literal.Parameters.FirstOrDefault()) is var data
+                ? xs.SelectMany(
+                    x => x is InterpolationSyntax i ? Enumerable(i, formatted) : LocateMismatches(data, x).Yield()
+                )
+                : [];
+
+        ITypeSymbol? TypeIn(SyntaxNode? node) => node is null ? null : model.GetTypeInfo(node, token).Type;
 
         IEnumerable<Diagnostic?> Enumerable(InterpolationSyntax interpolation, SmallList<IMethodSymbol> formatted)
         {
@@ -93,9 +70,7 @@ public sealed class MatchAnalyzer : DiagnosticAnalyzer
             var format = TypeIn(interpolation.FormatClause);
             var alignment = TypeIn(interpolation.AlignmentClause);
 
-            InvocationExpressionSyntax.DeserializeFrom(new MemoryStream(), default);
-
-            Predicate<IMethodSymbol>? Predicate(Strictness s) => // ReSharper disable AccessToModifiedClosure
+            Predicate<IMethodSymbol>? Predicate(Strictness s) =>
                 s is Strictness.Exact
                     ? x => TypeSymbolComparer.Equal(x.Parameters.FirstOrDefault()?.Type, expression) &&
                         TypeSymbolComparer.Equal(Alignment(x)?.Type, alignment) &&
@@ -118,8 +93,6 @@ public sealed class MatchAnalyzer : DiagnosticAnalyzer
                             _ => throw new InvalidOperationException($"{s}"),
                         };
 
-            // ReSharper restore AccessToModifiedClosure
-
             var method = formatted.FirstOrDefault(Predicate(Strictness.Exact)) ??
                 formatted.FirstOrDefault(Predicate(Strictness.ImplicitlyAndConstrained)) ??
                 formatted.FirstOrDefault(Predicate(Strictness.ImplicitlyAndUnconstrained)) ??
@@ -138,7 +111,31 @@ public sealed class MatchAnalyzer : DiagnosticAnalyzer
             yield return LocateMismatches(GetAttributes(Format(method)), interpolation.FormatClause);
         }
 
-        ITypeSymbol? TypeIn(SyntaxNode? node) => node is null ? null : model.GetTypeInfo(node, token).Type;
+        (Couple Couple, ExpressionSyntax? Syntax) ExpressionFromArgumentList(Couple couple, int index) =>
+            (couple, argumentList?.Arguments.Nth(index)?.Expression);
+
+        IEnumerable<Diagnostic?> Diagnostics(IEnumerable<IParameterSymbol> parameters) =>
+            parameters
+               .Take(argumentList?.Arguments.Count ?? 1)
+               .Select(GetAttributesIncludingInformationFromInterpolatedStringHandlerAttribute)
+               .Select(ExpressionFromArgumentList)
+               .SelectMany(x => LocateInterpolationMismatches(x).Prepend(LocateMismatches(x.Couple.Data, x.Syntax)));
+
+        (node switch
+            {
+                ExpressionSyntax expression => Diagnostics(Parameters(expression, model, token)),
+                PrimaryConstructorBaseTypeSyntax primary => Diagnostics(Parameters(primary, model, token)),
+                VariableDeclaratorSyntax
+                    {
+                        Initializer.Value: var value, Parent: VariableDeclarationSyntax { Type: var type },
+                    } when model.GetTypeInfo(value, token).Type?.SpecialType is SpecialType.System_String &&
+                    model.GetTypeInfo(type, token).Type is { } symbol
+                    => GetAttributes(symbol).Select(x => LocateMismatches(x, value)),
+                _ => [],
+            })
+           .Filter()
+           .Lazily(context.ReportDiagnostic)
+           .Enumerate();
     }
 
     static IParameterSymbol? Alignment(IMethodSymbol x) => x.Parameters.FirstOrDefault(x => x.Name is "alignment");
@@ -154,7 +151,7 @@ public sealed class MatchAnalyzer : DiagnosticAnalyzer
         parameter.Type
            .GetAttributes()
            .All(x => x.AttributeClass?.Name is not nameof(InterpolatedStringHandlerAttribute))
-            ? (first, default, default)
+            ? (first, default, null)
             : (first, FindAppendFormattedCandidates(list), FindAppendLiteral(list));
 
     static AttributeData? GetAttributes(IParameterSymbol? parameter) =>
@@ -215,17 +212,14 @@ public sealed class MatchAnalyzer : DiagnosticAnalyzer
     static bool IsConversion(IMethodSymbol x) =>
         x is { MethodKind: MethodKind.Conversion, Parameters: [{ Type.SpecialType: SpecialType.System_String }] };
 
-    static bool IsIntConversion(IMethodSymbol x) =>
-        x is { MethodKind: MethodKind.Conversion, Parameters: [{ Type.SpecialType: SpecialType.System_String }] };
-
-    static RegexStatus Match(Optional<object?> constant, string pattern, int options)
+    static RegexStatus Match(Optional<object?> constant, string pattern, RegexOptions options, bool allowRuntimeValues)
     {
         if (constant is not { HasValue: true, Value: var input })
-            return RegexStatus.Invalid;
+            return allowRuntimeValues ? RegexStatus.Passed : RegexStatus.Invalid;
 
         try
         {
-            return RegexCache.Get(pattern, (RegexOptions)options) is { } regex && !regex.IsMatch($"{input}")
+            return RegexCache.Get(pattern, options) is { } regex && !regex.IsMatch($"{input}")
                 ? RegexStatus.Failed
                 : RegexStatus.Passed;
         }
@@ -254,7 +248,7 @@ public sealed class MatchAnalyzer : DiagnosticAnalyzer
         {
             IMethodSymbol m => m.Parameters,
             IPropertySymbol p => p.Parameters,
-            _ => ImmutableArray<IParameterSymbol>.Empty,
+            _ => [],
         } is var parameters &&
         parameters is [.., { IsParams: true } last]
             ? parameters.Concat(last.Forever())
