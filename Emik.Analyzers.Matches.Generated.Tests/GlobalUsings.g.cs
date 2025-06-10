@@ -191,7 +191,6 @@ global using global::Emik;
 global using global::Emik.Analyzers;
 global using global::Emik.Analyzers.Matches;
 global using global::Emik.Analyzers.Matches.Generated;
-global using global::Emik.Analyzers.Matches.Generated.Tests;
 global using global::Emik.Morsels;
 global using global::Emik.Results;
 global using global::Emik.Results.Extensions;

@@ -18,17 +18,58 @@ public sealed class MatchGenerator() : FixedGenerator(
           {
               /// <summary>Initializes a new instance of the <see cref="Emik.MatchAttribute"/> class.</summary>
               /// <param name="pattern">The regular expression pattern to match.</param>
+              public MatchAttribute([global::System.Diagnostics.CodeAnalysis.StringSyntax(global::System.Diagnostics.CodeAnalysis.StringSyntaxAttribute.Regex)] string pattern)
+              {
+                  Pattern = pattern;
+              }
+
+              /// <summary>Initializes a new instance of the <see cref="Emik.MatchAttribute"/> class.</summary>
+              /// <param name="pattern">The regular expression pattern to match.</param>
               /// <param name="options">The bitwise combination of the enumeration values that modify the regular expression.</param>
-              public MatchAttribute([global::System.Diagnostics.CodeAnalysis.StringSyntax(global::System.Diagnostics.CodeAnalysis.StringSyntaxAttribute.Regex)] string pattern, global::System.Text.RegularExpressions.RegexOptions options = global::System.Text.RegularExpressions.RegexOptions.None)
+              public MatchAttribute([global::System.Diagnostics.CodeAnalysis.StringSyntax(global::System.Diagnostics.CodeAnalysis.StringSyntaxAttribute.Regex)] string pattern, global::System.Text.RegularExpressions.RegexOptions options)
               {
                   Pattern = pattern;
                   Options = options;
               }
-      
+
+              /// <summary>Initializes a new instance of the <see cref="Emik.MatchAttribute"/> class.</summary>
+              /// <param name="pattern">The regular expression pattern to match.</param>
+              /// <param name="allowRuntimeValues">The value determining whether to allow runtime values, instead of raising a warning.</param>
+              public MatchAttribute([global::System.Diagnostics.CodeAnalysis.StringSyntax(global::System.Diagnostics.CodeAnalysis.StringSyntaxAttribute.Regex)] string pattern, bool allowRuntimeValues)
+              {
+                  Pattern = pattern;
+                  AllowRuntimeValues = allowRuntimeValues;
+              }
+
+              /// <summary>Initializes a new instance of the <see cref="Emik.MatchAttribute"/> class.</summary>
+              /// <param name="pattern">The regular expression pattern to match.</param>
+              /// <param name="allowRuntimeValues">The value determining whether to allow runtime values, instead of raising a warning.</param>
+              /// <param name="options">The bitwise combination of the enumeration values that modify the regular expression.</param>
+              public MatchAttribute([global::System.Diagnostics.CodeAnalysis.StringSyntax(global::System.Diagnostics.CodeAnalysis.StringSyntaxAttribute.Regex)] string pattern, bool allowRuntimeValues, global::System.Text.RegularExpressions.RegexOptions options)
+              {
+                  Pattern = pattern;
+                  Options = options;
+                  AllowRuntimeValues = allowRuntimeValues;
+              }
+
+              /// <summary>Initializes a new instance of the <see cref="Emik.MatchAttribute"/> class.</summary>
+              /// <param name="pattern">The regular expression pattern to match.</param>
+              /// <param name="options">The bitwise combination of the enumeration values that modify the regular expression.</param>
+              /// <param name="allowRuntimeValues">The value determining whether to allow runtime values, instead of raising a warning.</param>
+              public MatchAttribute([global::System.Diagnostics.CodeAnalysis.StringSyntax(global::System.Diagnostics.CodeAnalysis.StringSyntaxAttribute.Regex)] string pattern, global::System.Text.RegularExpressions.RegexOptions options, bool allowRuntimeValues)
+              {
+                  Pattern = pattern;
+                  Options = options;
+                  AllowRuntimeValues = allowRuntimeValues;
+              }
+
+              /// <summary>Gets the value determining whether to allow runtime values, instead of raising a warning.</summary>
+              public bool AllowRuntimeValues { get; }
+
               /// <summary>Gets the regular expression to match.</summary>
               [global::System.Diagnostics.CodeAnalysis.StringSyntax(global::System.Diagnostics.CodeAnalysis.StringSyntaxAttribute.Regex)]
               public string Pattern { get; }
-      
+
               /// <summary>Gets the bitwise combination of the enumeration values that modify the regular expression.</summary>
               public global::System.Text.RegularExpressions.RegexOptions Options { get; }
           }
