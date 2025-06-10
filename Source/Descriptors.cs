@@ -10,7 +10,7 @@ public static class Descriptors
         DiagnosticSeverity.Error,
         "Argument fails regex test",
         "The argument does not match the regex specified by the parameter.",
-        "The argument does not match the regex specified by the parameter: <code>{0}</code>"
+        "The argument does not match the regex specified by the parameter: {0}"
     );
 
     /// <summary>Gets the descriptor describing that the argument is not a constant.</summary>
@@ -20,7 +20,7 @@ public static class Descriptors
             DiagnosticSeverity.Warning,
             "Non-constant argument may fail regex test",
             "The argument may not match the regex specified by the parameter.",
-            "The argument may not match the regex specified by the parameter: <code>{0}</code>"
+            "The argument may not match the regex specified by the parameter: {0}"
         );
 
     /// <summary>Gets the descriptor describing that the regex took to long to process.</summary>
@@ -30,7 +30,7 @@ public static class Descriptors
             DiagnosticSeverity.Info,
             "Argument regex test took too long",
             "The argument took too long to validate on whether it matches the regex specified by the parameter.",
-            "The argument took too long to validate on whether it matches the regex specified by the parameter: <code>{0}</code>"
+            "The argument took too long to validate on whether it matches the regex specified by the parameter: {0}"
         );
 
     /// <summary>Gets the descriptor describing that this capture group cannot exist.</summary>
