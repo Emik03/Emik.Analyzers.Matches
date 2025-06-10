@@ -87,12 +87,6 @@
         "resolved": "1.6.1",
         "contentHash": "cNFJIQESLXEryIleIx4xqNxA++YtdfyFxkjvmKZygLmgFthb6054deJ20pSl2y92T6J1SRzLGyE4kVaD3cub1g=="
       },
-      "Dwaas.Param.Documentation.Analyzer": {
-        "type": "Direct",
-        "requested": "[1.0.6258.29691, )",
-        "resolved": "1.0.6258.29691",
-        "contentHash": "A6dB2OZjhA9kaIaEiT8L9dCxQAf4ExmOymSbiHFI2oTjT1ZVIkPz82FUBA28GNpqIvElTs/BH0h0louTjAOZOQ=="
-      },
       "Emik.SourceGenerators.Choices": {
         "type": "Direct",
         "requested": "[1.4.5, )",

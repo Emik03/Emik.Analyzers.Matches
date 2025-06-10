@@ -3,7 +3,7 @@ namespace Emik.Analyzers.Matches.Generated.Tests;
 #pragma warning disable CS0219, CS9113, CA1819, GU0011, GU0073, IDE0032, IDE0059, MA0009, MA0110, RCS1085, SYSLIB1045
 
 // ReSharper disable NotAccessedPositionalProperty.Global
-sealed record B([Match(@"^\d*$")] string? Unused = null)
+sealed partial record B([Match(@"^\d*$")] string? Unused = null)
 {
     // ReSharper disable once StringLiteralTypo
     const string
@@ -27,8 +27,8 @@ sealed record B([Match(@"^\d*$")] string? Unused = null)
 
     public string this[[Match(@"^\d*$")] string a] => a;
 
-    // [GeneratedRegex("foobar(a)")]
-    // private static partial Regex PartialMethodRegex();
+    [GeneratedRegex("foobar(a)")]
+    private static partial Regex PartialMethodRegex();
 
     static Regex MethodBodyRegex() => new("a(b)");
 
@@ -36,8 +36,10 @@ sealed record B([Match(@"^\d*$")] string? Unused = null)
 
     public static void DoesItWork()
     {
-        Regex regex = new("foobar(a)");
+        Regex regex = new("foobar(a)"); // ReSharper disable once ConvertToConstant.Local InlineTemporaryVariable
 
+        var s = Yes;
+        AllowRuntimeValues(s, Yes.Replace(Yes, Yes));
         _ = Static(Yes);
         _ = new B().Instance(Yes);
         _ = new B()[Yes];
@@ -47,13 +49,13 @@ sealed record B([Match(@"^\d*$")] string? Unused = null)
         Static(Yes, Yes, Yes, Yes);
         Interpolation($"{Yes} {Yes:Yes}");
 
-        // PartialMethodRegex().IsMatch("", out _, out _);
         _ = new Regex("(a)(b)").IsMatch("");
         new Regex("foobar(a)").IsMatch("", out _, out _);
         s_fieldRegex.IsMatch("", out _, out _);
         PropertyRegexBody.IsMatch("", out _, out _);
         PropertyRegexInitializer.IsMatch("", out _, out _);
         regex.IsMatch("", out _, out _);
+        PartialMethodRegex().IsMatch("", out _, out _);
         MethodBodyRegex().IsMatch("", out _, out _);
     }
 
@@ -61,6 +63,7 @@ sealed record B([Match(@"^\d*$")] string? Unused = null)
     {
         Regex regex = new("foobar(a)");
 
+        AllowRuntimeValues(No, "", "a", "a lot");
         _ = Static(No);
         _ = new B().Instance(No);
         _ = new B()[No];
@@ -75,6 +78,7 @@ sealed record B([Match(@"^\d*$")] string? Unused = null)
         PropertyRegexBody.IsMatch("", out _);
         PropertyRegexInitializer.IsMatch("", out _);
         regex.IsMatch("", out _);
+        PartialMethodRegex().IsMatch("", out _);
         MethodBodyRegex().IsMatch("", out _);
     }
 

@@ -1,8 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
         <TargetFramework>net10.0</TargetFramework>
+        <RepositoryUrl>https://github.com/Emik03/Emik.Analyzers.Matches</RepositoryUrl>
     </PropertyGroup>
     <ItemGroup>
-        <Compile Remove="$(Morsels)Compile/Source/References/**"/>
+        <Compile Remove="$(Morsels)Compile/Source/References/**/*.cs"/>
     </ItemGroup>
 </Project>
