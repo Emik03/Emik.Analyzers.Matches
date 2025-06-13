@@ -1,4 +1,4 @@
 ﻿<Solution>
-    <Project Path="Emik.Analyzers.Matches.csproj" Type="Classic C#"/>
-    <Project Path="Emik.Analyzers.Matches.Generated.Tests\Emik.Analyzers.Matches.Generated.Tests.csproj" Type="Classic C#"/>
+  <Project Path="Emik.Analyzers.Matches.csproj" Type="Classic C#" />
+  <Project Path="Emik.Analyzers.Matches.Generated.Tests\Emik.Analyzers.Matches.Generated.Tests.csproj" Type="Classic C#" />
 </Solution>
