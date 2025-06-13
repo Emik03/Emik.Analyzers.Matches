@@ -89,9 +89,9 @@
       },
       "Emik.SourceGenerators.Choices": {
         "type": "Direct",
-        "requested": "[1.4.5, )",
-        "resolved": "1.4.5",
-        "contentHash": "6hkOOKsywlzZKQ0sBUdvN9mhn3eKtD1ZhrM9ZhmkDYJrmTeKneWkCg8vHodsZjd3bhfGpRbmSSUL148Mtgffsw=="
+        "requested": "[1.4.6, )",
+        "resolved": "1.4.6",
+        "contentHash": "PJugrqsMew7ApZGLe3lUWdk2+LNoSWl74DFT1BApD8eir9CJXudBpZWdhJDJL8aSdB99ZptcFDTPAUrQdYFDYQ=="
       },
       "Emik.SourceGenerators.Implicit": {
         "type": "Direct",

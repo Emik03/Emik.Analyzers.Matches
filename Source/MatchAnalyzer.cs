@@ -62,13 +62,14 @@ public sealed class MatchAnalyzer : DiagnosticAnalyzer
                 )
                 : [];
 
+        [return: NotNullIfNotNull(nameof(node))]
         ITypeSymbol? TypeIn(SyntaxNode? node) => node is null ? null : model.GetTypeInfo(node, token).Type;
 
         IEnumerable<Diagnostic?> Enumerable(InterpolationSyntax interpolation, SmallList<IMethodSymbol> formatted)
         {
-            var expression = model.GetTypeInfo(interpolation.Expression, token).Type;
-            var format = TypeIn(interpolation.FormatClause);
+            var expression = TypeIn(interpolation.Expression);
             var alignment = TypeIn(interpolation.AlignmentClause);
+            var format = TypeIn(interpolation.FormatClause);
 
             Predicate<IMethodSymbol>? Predicate(Strictness s) =>
                 s is Strictness.Exact
@@ -76,8 +77,8 @@ public sealed class MatchAnalyzer : DiagnosticAnalyzer
                         TypeSymbolComparer.Equal(Alignment(x)?.Type, alignment) &&
                         TypeSymbolComparer.Equal(Format(x)?.Type, format)
                     : x => expression.IsAssignableTo(x.Parameters.FirstOrDefault()?.Type, compilation) &&
-                        alignment.IsAssignableTo(Alignment(x)?.Type, compilation) &&
-                        format.IsAssignableTo(Format(x)?.Type, compilation) &&
+                        alignment?.IsAssignableTo(Alignment(x)?.Type, compilation) is true &&
+                        format?.IsAssignableTo(Format(x)?.Type, compilation) is true &&
                         s switch
                         {
                             Strictness.Exact => throw Unreachable,
